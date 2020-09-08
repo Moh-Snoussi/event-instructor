@@ -1,18 +1,20 @@
 // @flow
 
 import 'events-polyfill'
-require ("./Types");
-import {Constructable, ElementInstructorInterface} from "./ElementsInstructor";
-import {EventFire, Subscriptions} from "./Types";
 
 export default class EventManager {
+
     /**
      * used to allow sigle instance
      * @private
      */
     private static Singleton: EventManager;
 
-    private startDate: Date;
+    /**
+     * data that will be for debugging
+     * @private
+     */
+    private startDate: Date | undefined;
 
     /**
      *
@@ -46,7 +48,7 @@ export default class EventManager {
     /**
      *
      */
-    elementEvents: Object = {};
+    elementEvents: any = {};
 
     /**
      *
@@ -56,17 +58,24 @@ export default class EventManager {
     /**
      * the function subscribe to events
      *
-     * @param elementsInstructorIns
+     * @param eventsInstructor
      */
-    subscribe(elementsInstructorIns: Constructable<ElementInstructorInterface>): EventManager
-    {
-        const elementsInstructor: ElementInstructorInterface = new elementsInstructorIns()
+    setSubscriber(eventsInstructor: Constructable<EventInstructorInterface>): EventManager {
+        const elementsInstructor: EventInstructorInterface = new eventsInstructor()
+
+        // check if getSubscribers is defined method
+        if (typeof elementsInstructor.getSubscribers() === 'undefined') {
+            throw new Error('getSubscribers is not defined on ' + elementsInstructor.constructor.name)
+        }
+
         const subscribers: Subscriptions = elementsInstructor.getSubscribers()
 
         for (let subscriber in subscribers) {
 
             if (subscribers.hasOwnProperty(subscriber)) {
-                const dynamicElements = subscribers[subscriber]
+                const dynamicElements: any = {}
+                // @ts-ignore
+                dynamicElements[subscriber] = subscribers[subscriber]
 
                 if (this.elementIds.size === 0) {
                     // needed for logging the executionTime that is found on eventsRegistered event
@@ -74,7 +83,7 @@ export default class EventManager {
                     this.startDate = new Date();
                 }
 
-                for (let dynamicElementId in dynamicElements) {
+                for (let dynamicElementId in dynamicElements[subscriber]) {
                     if (dynamicElements.hasOwnProperty(dynamicElementId)) {
 
                         if (!(this.elementIds.has(dynamicElementId))) {
@@ -111,6 +120,16 @@ export default class EventManager {
         return this
     }
 
+    /**
+     *
+     * @param subscribers
+     */
+    setSubscribers(subscribers: Array<Constructable<EventInstructorInterface>>): void {
+        for (let subscriber in subscribers) {
+            this.setSubscriber(subscribers[subscriber])
+        }
+        return this.listen();
+    }
 
     /**
      *
@@ -140,8 +159,11 @@ export default class EventManager {
     listen(): void {
         const startTime: any = new Date();
         for (let elementId in this.dynamicElements) {
+            // @ts-ignore
             for (let currentEvent in this.dynamicElements[elementId]) {
+                // @ts-ignore
                 if (this.dynamicElements[elementId].hasOwnProperty(currentEvent)) {
+                    // @ts-ignore
                     const elementReactions = this.dynamicElements[elementId][currentEvent];
 
                     let element = null;
@@ -152,19 +174,14 @@ export default class EventManager {
                     } else {
                         element = document.getElementById(elementId);
                     }
+                    // @ts-ignore
                     element.addEventListener(
                         currentEvent,
                         function (e) {
                             elementReactions.forEach(function (elementReaction) {
-                                if (elementReaction.preventDefault) {
-                                    e.preventDefault();
-                                }
+                                if (elementId)
 
-                                if (elementReaction.stopPropagation) {
-                                    e.stopPropagation();
-                                }
-
-                                elementReaction.callBack(e);
+                                    elementReaction.callBack(e);
                             });
                         });
                 }
@@ -191,3 +208,77 @@ export default class EventManager {
     }
 }
 
+/**
+ *
+ */
+export interface EventInstructorInterface {
+    getSubscribers(): Subscriptions;
+}
+
+export interface Constructable<T> {
+    new(...args: any): T;
+}
+
+export type EventFire = {
+    name: string,
+    fire: Function
+}
+
+export type Subscriptions = {
+    /**
+     * used to allow "uniqueKey" to appear in the ide suggestion
+     */
+    uniqueKey:
+        {
+            [elementId: string]:
+                {
+                    [eventName: string]: {
+                        callBack: () => void
+                    }
+                }
+        }
+} | {
+    /**
+     * used to allow "elementId" to appear in the ide suggestion
+     * the elementId can be a document or window as well
+     */
+    [uniqueKey: string]:
+        {
+            elementId:
+                {
+                    [eventName: string]: {
+                        callBack: void
+                    }
+                }
+        },
+} | {
+
+    /**
+     * this type is used to autocomplete and suggest the eventName
+     * used to allow "eventName" to appear in the ide suggestion
+     */
+    [uniqueKey: string]:
+        {
+            [elementId: string]:
+                {
+                    eventName: {
+                        callBack: void
+                    }
+                }
+        }
+} | {
+
+    /**
+     * this type is used to autocomplete and suggest the eventName
+     * used to allow "eventName" to appear in the ide suggestion
+     */
+    [uniqueKey: string]:
+        {
+            [elementId: string]:
+                {
+                    [eventName: string]: {
+                        callBack: Function
+                    }
+                }
+        },
+}
