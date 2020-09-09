@@ -15,6 +15,8 @@ export default class EventManager {
      * @private
      */
     private startDate: Date | undefined;
+    private unsubscribeList: any;
+    private cleanUpBeforeListen: boolean | undefined;
 
     /**
      *
@@ -46,7 +48,7 @@ export default class EventManager {
     elementIds: Set<string> = new Set();
 
     /**
-     *
+     * to
      */
     elementEvents: any = {};
 
@@ -56,11 +58,15 @@ export default class EventManager {
     publishers: Object = {};
 
     /**
-     * the function subscribe to events
+     * will cleanup the subscriber and start listening
      *
      * @param eventsInstructor
      */
-    setSubscriber(eventsInstructor: Constructable<EventInstructorInterface>): EventManager {
+    subscribe(eventsInstructor: Constructable<EventInstructorInterface>): void {
+        if (!this.cleanUpBeforeListen) {
+            this.startDate = new Date();
+        }
+
         const elementsInstructor: EventInstructorInterface = new eventsInstructor()
 
         // check if getSubscribers is defined method
@@ -70,54 +76,123 @@ export default class EventManager {
 
         const subscribers: Subscriptions = elementsInstructor.getSubscribers()
 
-        for (let subscriber in subscribers) {
-
-            if (subscribers.hasOwnProperty(subscriber)) {
-                const dynamicElements: any = {}
+        for (const subscribersKey in subscribers) {
+            if (subscribers.hasOwnProperty(subscribersKey)) {
                 // @ts-ignore
-                dynamicElements[subscriber] = subscribers[subscriber]
+                const currentSubscriber = subscribers[subscribersKey];
 
-                if (this.elementIds.size === 0) {
-                    // needed for logging the executionTime that is found on eventsRegistered event
-                    // size on start will be 0
-                    this.startDate = new Date();
+                for (const events in currentSubscriber.subscribers) {
+                    if (currentSubscriber.subscribers.hasOwnProperty(events)) {
+                        const eventsArray = events.split(' ')
+                        const reaction = currentSubscriber.subscribers[events];
+                        reaction.scope = elementsInstructor;
+                        const unsubscribable: boolean = currentSubscriber.subscribers.unsubscribable ?? false
+                        const options: any = currentSubscriber.subscribers.options ?? false
+                        const fireOnes: boolean = currentSubscriber.subscribers.fireOnes ?? false
+                        const selectorId: any = currentSubscriber.selector.type ? currentSubscriber.selector.type + '€' + currentSubscriber.selector.value : currentSubscriber.selector
+
+                        for (const currentEvent in eventsArray) {
+                            if (unsubscribable || fireOnes) {
+                                this.handleUnsubscribable(
+                                    subscribersKey,
+                                    currentSubscriber.selector,
+                                    currentEvent,
+                                    currentSubscriber.subscribers.callBack,
+                                    options,
+                                    fireOnes
+                                )
+                            } else if(!this.cleanUpBeforeListen) {
+                                this.getElement(currentSubscriber.selector)?.addEventListener(currentEvent, currentSubscriber.subscribers.callBack, options)
+                            }
+                            else if (this.elementEvents[selectorId]?.has(currentEvent)) {
+                                // same event is already registered
+                                // @ts-ignore
+                                this.dynamicElements[selectorId][currentEvent].push(reaction);
+
+                            } else { // @ts-ignore
+                                if (this.dynamicElements[selectorId]) {
+                                                                // the element is already set but does not have any eventListener
+                                                                // @ts-ignore
+                                    this.dynamicElements[selectorId][currentEvent] = [reaction];
+                                                            } else {
+                                                                // @ts-ignore
+                                    this.dynamicElements[selectorId] = {[currentEvent]: [reaction]};
+                                                            }
+                            }
+                            this.elementEvents[selectorId].add(currentEvent);
+                        }
+                    }
                 }
 
-                for (let dynamicElementId in dynamicElements[subscriber]) {
-                    if (dynamicElements.hasOwnProperty(dynamicElementId)) {
+            }
+        }
+        if (!this.cleanUpBeforeListen) {
+            this.listen();
+        }
+    }
 
-                        if (!(this.elementIds.has(dynamicElementId))) {
-                            this.elementEvents[dynamicElementId] = new Set();
-                            this.elementIds.add(dynamicElementId);
+    /**
+     *
+     * @param eventsInstructor
+     * @param events
+     */
+    unsubscribe(eventsInstructor: Constructable<EventInstructorInterface>, events?: Array<string>) {
+        for (const instructor in eventsInstructor) {
+            if (this.unsubscribeList.find(instructor)) {
+                if (events) {
+                    for (const event in events) {
+                        if (this.unsubscribeList[instructor].find(event)) {
+                            const unsubscribable = this.unsubscribeList[instructor][event]
+                            // @ts-ignore
+                            this.getElement(unsubscribable.selector)?.removeEventListener(event, window[unsubscribable.callBackName], unsubscribable.options)
                         }
-                        for (let events in dynamicElements[dynamicElementId]) {
-                            if (dynamicElements[dynamicElementId].hasOwnProperty(events)) {
-                                const eventsArray = events.split(' ');
-                                for (let currentIndex in eventsArray) {
-                                    if (eventsArray.hasOwnProperty(currentIndex)) {
-                                        const currentEvent = eventsArray[currentIndex];
-
-                                        // reaction must be an object that contains the callback function, and optional preventDefault and stopPropagation if they are not provided they are set to false
-                                        const reaction = dynamicElements[dynamicElementId][events];
-                                        reaction.scope = elementsInstructor;
-
-                                        if (this.elementEvents[dynamicElementId].has(currentEvent)) {
-                                            this.dynamicElements[dynamicElementId][currentEvent].push(reaction);
-                                        } else if (this.dynamicElements[dynamicElementId]) {
-                                            this.dynamicElements[dynamicElementId][currentEvent] = [reaction];
-                                        } else {
-                                            this.dynamicElements[dynamicElementId] = {[currentEvent]: [reaction]};
-                                        }
-                                        this.elementEvents[dynamicElementId].add(currentEvent);
-                                    }
-                                }
-                            }
-                        }
+                    }
+                } else {
+                    for (const unsubscribeListKey in this.unsubscribeList[instructor]) {
+                        let currentUnsubscribed = this.unsubscribeList[instructor][unsubscribeListKey]
+                        // @ts-ignore
+                        this.getElement(currentUnsubscribed.selector)?.removeEventListener(unsubscribeListKey, window[currentUnsubscribed.callBackName], currentUnsubscribed.options)
                     }
                 }
             }
         }
-        return this
+    }
+
+
+    /**
+     *
+     * @param subscriberKey
+     * @param selector
+     * @param eventTrigger
+     * @param callBack
+     * @param fireOnes
+     * @param options
+     */
+    handleUnsubscribable(subscriberKey: string,
+                         selector: string | { type: string, value: string },
+                         eventTrigger: string,
+                         callBack: Function,
+                         options: any = false,
+                         fireOnes: boolean = false,
+    ): void {
+        // @ts-ignore
+        const element: HTMLElement = this.getElement(selector)
+        const callBackName: string = subscriberKey + '_' + eventTrigger
+        this.unsubscribeList[subscriberKey][eventTrigger] = {
+            callBackName: callBackName,
+            selector: selector,
+            options: options
+        }
+        // @ts-ignore
+        window[callBackName] = function (event) {
+            callBack(event);
+            if (fireOnes) {
+                // @ts-ignore
+                element.removeEventListener(eventTrigger, window[callBackName], options)
+            }
+        }
+        // @ts-ignore
+        element.addEventListener(eventTrigger, window[callBackName], options)
     }
 
     /**
@@ -125,8 +200,10 @@ export default class EventManager {
      * @param subscribers
      */
     setSubscribers(subscribers: Array<Constructable<EventInstructorInterface>>): void {
+        this.cleanUpBeforeListen = true;
+        this.startDate = new Date();
         for (let subscriber in subscribers) {
-            this.setSubscriber(subscribers[subscriber])
+            this.subscribe(subscribers[subscriber]);
         }
         return this.listen();
     }
@@ -135,9 +212,11 @@ export default class EventManager {
      *
      * @param eventObject
      */
-    publish(eventObject: { name: string, detail: Object, element?: any }): void {
+    publish(eventObject: { name: string, detail: Object, element?: any }): void
+    {
         const ev = new CustomEvent(eventObject.name, {detail: eventObject.detail, cancelable: true});
         (eventObject.element ? eventObject.element : document).dispatchEvent(ev);
+        // @ts-ignore
         this.publishers[eventObject.name] = {detail: eventObject.detail}
     }
 
@@ -146,7 +225,8 @@ export default class EventManager {
      * @param eventName
      * @param detail
      */
-    fire(eventName: string, detail: Object): void {
+    fire(eventName: string, detail: Object): void
+    {
         this.publish({
             name: eventName,
             detail: detail
@@ -156,8 +236,11 @@ export default class EventManager {
     /**
      * add all registered events
      */
-    listen(): void {
-        const startTime: any = new Date();
+    listen(): void
+    {
+        const startTime
+            :
+            any = new Date();
         for (let elementId in this.dynamicElements) {
             // @ts-ignore
             for (let currentEvent in this.dynamicElements[elementId]) {
@@ -178,7 +261,7 @@ export default class EventManager {
                     element.addEventListener(
                         currentEvent,
                         function (e) {
-                            elementReactions.forEach(function (elementReaction) {
+                            elementReactions.forEach(function (elementReaction: { callBack: (arg0: Event) => void; }) {
                                 if (elementId)
 
                                     elementReaction.callBack(e);
@@ -193,6 +276,7 @@ export default class EventManager {
             totalExecution: finishingDate - <any>this.startDate,
             registrationTime: finishingDate - startTime
         })
+        this.cleanUpBeforeListen = false;
     }
 
     /**
@@ -205,6 +289,16 @@ export default class EventManager {
             const eventManager = new EventManager()
             eventManager.fire(currentEvent.name, detail)
         }
+    }
+
+    /**
+     *
+     * @param selector
+     * @private
+     */
+    private getElement(selector: any): HTMLElement | null {
+        // @ts-ignore
+        return typeof selector === "object" ? document[selector.key](selector.value) : document.querySelector(selector.value)
     }
 }
 

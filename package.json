@@ -8,7 +8,7 @@
   "homepage": "https://github.com/Moh-Snoussi/event-instructor",
   "scripts": {
     "build": "tsc -p .",
-    "create:instructor": "ts-node-script ./commands/create_instructor.ts"
+    "create:instructor": "ts-node-script ./src/commands/create_instructor.ts"
   },
   "keywords": ["dom events", "subpub", "event manager", "eventListner", "subscriber", "publisher"],
   "author": "Mohamed Snoussi",
