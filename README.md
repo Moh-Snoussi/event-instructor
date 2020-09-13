@@ -8,88 +8,62 @@
 
 </div>
 
-This module help writing javascript/typescript more efficient by using the pub/sub patern and by encapsulating eventListeners, it will group similar EventListeners into one. 
+It helps organize code using the sub/pub pattern:
 
+Sub : subscribe = addEventListner
 
-## 🏁 Install <a name = "install"></a>
+Pub : publish = CustomEvent
 
-```
-npm install event-instructor --save
-```
+Usage can be categorized into two categories : 
+- inline implementation
+- oop implementation
 
-## Usage
-```
-npm explore event-instructor npm run create:instructor
-```
-
-the command will guide you, then the final result may look like this:
-```
-import EventManager, {EventFire, EventInstructorInterface, Subscriptions} from "./../../EventManager"
-
-/**
- * Foo
- * $DESCRIPTION$
- */
-export default class Foo implements EventInstructorInterface {
-
-    /**
-     *
-     * @returns {Subscriptions}
-     */
-    getSubscribers(): Subscriptions {
-        return {
-            // unique key can be anything that will be useful in debugging
-            uniqueKey: {
-                // the elementId we are subscribing to, can be an id or "document" or "window"
-                elementId: {
-                    // the event we are subscribing to, can be string separated by space eg: "click customEvent"
-                    eventName: {
-                        callBack: function (event) {
-                            this.scope.scopeCallback(event)
-                        },
-                    }
-                    // add another eventListener
-                }
-                // add another ElementID
-            }
-            // add another entry
-        }
-    }
-
-
-    /**
-     *
-     * @param event
-     */
-    public scopeCallback(event: Event): void {
-        console.log('callback is called from ' + Foo.constructor.name)
-    }
-
-    /**
-     * can be used to fire the event as Foo.FooEvent.fire(details)
-     * or can be listened to in other Instructor by Foo.FooEvent.name
-     */
-    static FooEvent: EventFire = {
-        name: 'FooEvent',
-        fire: (detail) => {
-            const self = Foo.FooEvent
-            const eventManager: EventManager = new EventManager()
-            eventManager.fire(self.name, detail)
-        }
-    }
-}
-```
-the event publisher and subscribers need to be defined, then in the entry javascript (main.js / app.js) we subscribe as follow
+###Inline
+Listening to an event:
 
 ```
-const {EventManager} = require( "event-instructor" )
-import {Foo} from "./DirectoryWhere/Foo" // change the directoryWhere
-const eventManager = new EventManager();
-eventManager
-        .subscribe( Foo )
-        //.subscribe( anotherInstructor )
-        .listen() // register all subscribers and start listening to the events
-
+const selectorClickSubscriber = ('selector').subscribe ('click', function (event){  console.log(event) }
 ```
 
+Unsubscribing:
 
+```
+(selectorClickSubscriber).unsubscribe()
+```
+
+Listening to the event only ones:
+```
+('selector').subscribeOnes('click', function (event){ console.log('this is fired only ones')})
+```
+
+Or if the event is bound on the document then you can include the event name and anonym function like this: ;
+```
+('event'). subscribe (function (event) { console.log(event) })
+```
+
+\\ An option can be passed as an object
+\\ you can read more about the options here
+const subscriber = ('selector').subscribe ('click', function (event){  console.log(event) }, {options})
+
+\\ resolvers resolve a value that is requested on an event callback: 
+
+('event').subscribe(function (event) { const resolvedValue = ValueResolver.resolve('foo')
+console.log('new resolved value: ', resolvedValue) // fooBar})
+
+('event').(resolved(oldValue, allResolverValueArray) { console.log(oldValue, allResolverValueArray)
+Return oldValue + 'Bar' })
+ For many resolvers you can set the priority of the resolver function
+
+('event').(resolved(oldValue, allResolverValueArray) { console.log(oldValue, allResolverValueArray)
+ValueResolver.setOrder(1)
+Return oldValue + 'Bar' })
+
+The resolvedValue will be 'fooBarBaz'
+
+Publisher are simpler
+EventManager.publish({name: 'eventName', options})
+
+
+The above implementation is a fast usage and is not advised mainly because code can be hard to maintain and what I call events hell where things are subscriber and fired from anywhere, second reason is as you may already noticed that the new prototypes of the string is implemented, there for is advised to use the oop aproche, that will be described in the next section
+
+The oop aproche has a command line tool that can generate Eventnstructor

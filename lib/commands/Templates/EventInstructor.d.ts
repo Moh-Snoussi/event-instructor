@@ -1,4 +1,4 @@
-import { EventFire, EventInstructorInterface, Subscriptions } from "event-instructor";
+import { EventFire, EventInstructorInterface, Subscription } from "./../../EventManager";
 /**
  * $NAME$
  * $DESCRIPTION$
@@ -6,14 +6,15 @@ import { EventFire, EventInstructorInterface, Subscriptions } from "event-instru
 export default class $NAME$ implements EventInstructorInterface {
     /**
      *
-     * @returns {Subscriptions}
+     * @returns {Subscription}
      */
-    getSubscribers(): Subscriptions;
+    getSubscribers(): Array<Subscription>;
+    subscriptions: Array<Subscription>;
     /**
      *
      * @param event
      */
-    scopeCallback(event: Event): void;
+    documentLoadSubscriberCallBack(event: Event): Date;
     /**
      * can be used to fire the event as Foo.FooEvent.fire(details)
      * or can be listened to in other Instructor by Foo.FooEvent.name

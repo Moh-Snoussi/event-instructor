@@ -1,47 +1,90 @@
-import 'events-polyfill';
+import { Resolver } from "./CallBackValueResolver";
 export default class EventManager {
     /**
-     * used to allow sigle instance
+     * used to allow single instance
      * @private
      */
     private static Singleton;
     /**
-     * data that will be for debugging
-     * @private
+     * hold events with their function name and options that can be used to unsubscribe from a particular event
      */
-    private startDate;
+    private static unsubscribeList;
+    private publishers;
+    private static incrementer;
     /**
      *
      * @returns {void}
      */
     constructor();
     /**
+     * allows a string to have a subscriber prototype
+     * ('selector').subscribe(function(){})
+     */
+    private setStringSubscriber;
+    /**
+     * allows a string to have a subscriber prototype
+     * ('selector').subscribe(function(){})
+     */
+    private setStringEventValueResolver;
+    private handleInlineSubscriber;
+    /**
+     * allows a string to have a subscriber prototype
+     * ('selector').subscribe(function(){})
+     */
+    private setStringUnsubscriber;
+    private setStringSubscribeOnes;
+    /**
      *
      * @returns {EventManager}
      */
     singleton(): EventManager;
     /**
+     * return an id that contain the element and the event
      *
+     * @param selector
      */
-    dynamicElements: Object;
+    static getSelectorId(selector: EventElementSelector): string;
     /**
+     * get html element from selector id, please note selector id is not html element id,
+     * selector id is an identifier used internally to get the required element
      *
+     * @param selectorId
      */
-    elementIds: Set<string>;
+    private static getElementFromSelectorId;
     /**
-     *
+     * returns HTMLElement from selector,
+     * @param selector
+     * @private
      */
-    elementEvents: Object;
+    private static getElement;
     /**
-     *
-     */
-    publishers: Object;
-    /**
-     * the function subscribe to events
+     * will cleanup the subscriber and start listening
      *
      * @param eventsInstructor
      */
-    subscribe(eventsInstructor: Constructable<EventInstructorInterface>): EventManager;
+    subscribe(eventsInstructor: Constructable<EventInstructorInterface>): void;
+    /**
+     *
+     * @param currentSubscriber
+     * @param eventInstructor
+     */
+    private setListener;
+    /**
+     *
+     * @param unsubscribable
+     */
+    unsubscribe(unsubscribable: Unsubscribable | string): boolean;
+    /**
+     * remove an event listener
+     * @param unsubscribableId
+     */
+    private static removeListener;
+    /**
+     *
+     * subscribe to an array of eventInstructors
+     * @param subscribers
+     */
+    setSubscribers(subscribers: Array<Constructable<EventInstructorInterface>>): void;
     /**
      *
      * @param eventObject
@@ -58,10 +101,6 @@ export default class EventManager {
      */
     fire(eventName: string, detail: Object): void;
     /**
-     * add all registered events
-     */
-    listen(): void;
-    /**
      *
      */
     static eventsRegisteredEvent: EventFire;
@@ -70,7 +109,7 @@ export default class EventManager {
  *
  */
 export interface EventInstructorInterface {
-    getSubscribers(): Subscriptions;
+    getSubscribers(): Array<Subscription>;
 }
 export interface Constructable<T> {
     new (...args: any): T;
@@ -79,52 +118,34 @@ export declare type EventFire = {
     name: string;
     fire: Function;
 };
-export declare type Subscriptions = {
-    /**
-     * used to allow "uniqueKey" to appear in the ide suggestion
-     */
-    uniqueKey: {
-        [elementId: string]: {
-            [eventName: string]: {
-                callBack: () => void;
-            };
-        };
+export declare type EventFunctions = {
+    callBack?: (event: Event | CustomEvent) => void;
+    callBackOnes?: (event: Event | CustomEvent) => void;
+    resolver?: Resolver;
+    resolverId?: string;
+    scope?: EventInstructorInterface | any;
+    options?: any;
+};
+export declare type Subscription = {
+    selector?: EventElementSelector;
+    subscribers?: {
+        [k in EventType]: EventFunctions;
     };
 } | {
-    /**
-     * used to allow "elementId" to appear in the ide suggestion
-     * the elementId can be a document or window as well
-     */
-    [uniqueKey: string]: {
-        elementId: {
-            [eventName: string]: {
-                callBack: void;
-            };
-        };
-    };
-} | {
-    /**
-     * this type is used to autocomplete and suggest the eventName
-     * used to allow "eventName" to appear in the ide suggestion
-     */
-    [uniqueKey: string]: {
+    [j in EventType]: EventFunctions;
+};
+export declare type EventType = keyof GlobalEventHandlersEventMap | string;
+declare type EditableSelector = {
+    type: string;
+    value: string;
+};
+declare type EventElementSelector = EditableSelector | string;
+declare type Unsubscribable = {
+    [instructorName: string]: {
         [elementId: string]: {
-            eventName: {
-                callBack: void;
-            };
-        };
-    };
-} | {
-    /**
-     * this type is used to autocomplete and suggest the eventName
-     * used to allow "eventName" to appear in the ide suggestion
-     */
-    [uniqueKey: string]: {
-        [elementId: string]: {
-            [eventName: string]: {
-                callBack: Function;
-            };
+            [event: string]: Array<string>;
         };
     };
 };
+export {};
 //# sourceMappingURL=EventManager.d.ts.map

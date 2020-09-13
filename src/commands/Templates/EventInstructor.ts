@@ -1,51 +1,80 @@
-import EventManager, {EventFire, EventInstructorInterface, Subscriptions} from "event-instructor"
+// import EventManager, {EventFire, EventInstructorInterface, Subscriptions} from "event-instructor"
+import ValueResolver from "../../CallBackValueResolver"
+
 $STYLE$
+
+import EventManager, { EventFire, EventInstructorInterface, Subscription } from "./../../EventManager"
 
 /**
  * $NAME$
  * $DESCRIPTION$
  */
-export default class $NAME$ implements EventInstructorInterface {
+export default class $NAME$ implements EventInstructorInterface
+{
 
     /**
      *
-     * @returns {Subscriptions}
+     * @returns {Subscription}
      */
-    getSubscribers(): Subscriptions {
-        return {
-            // unique key can be anything that will be useful in debugging
-            uniqueKey: {
-                // the elementId we are subscribing to, can be an id or "document" or "window"
-                selector: {
-                    // the event we are subscribing to, can be string separated by space eg: "click customEvent"
-                    eventName: {
-                        callBack: function (event: Event) {
-                            // @ts-ignore this scope is referencing this class
-                            this.scope.scopeCallback(event)
-                        },
-                    }
-                    // add another eventListener
-                },
-                document: {
-                    [$NAME$.$NAME$Event.name]: {
-                        callBack: function (event: CustomEvent) {
-                            console.log('custom event is fired: ' + $NAME$.$NAME$Event.name, event)
-                        }
+    getSubscribers(): Array<Subscription>
+    {
+        return this.subscriptions
+    }
+
+    subscriptions: Array<Subscription> = [
+        {
+            selector: 'body',
+            subscribers: {
+                click: {
+                    callBack: function ( event ) {
+                        this.scope.documentLoadSubscriberCallBack( event )
                     }
                 }
-                // add another ElementID
             }
-            // add another entry
+        },
+        {
+            [ $NAME$.$NAME$Event.name ]: {
+                callBack: function ( event ): void {
+                    var data = ValueResolver.valueResolver( event.detail )
+
+                    console.log( 'new value of date: ', data )
+                },
+                callBackOnes: function ( event ): void {
+                    console.log( 'this is fired only ones' )
+                },
+                resolver: function ( latest: any, allResolvers: Array<any> ): any {
+                    // the resolver can change the value of the data in the callBack function even if the resolver function in a different eventInstructor
+                    // it only need to have the same selector as the subscriber where CallBackValueResolver.valueResolver is called
+
+                    console.log( 'old resolver date: ', latest )
+
+                    // change the resolver value
+                    return new Date()
+                }
+            }
+        },
+        {
+
         }
-    }
+    ]
+
 
     /**
      *
      * @param event
      */
-    public scopeCallback(event: Event): void {
-        console.log('callback is called from ' + $NAME$.constructor.name)
-        $NAME$.$NAME$Event.fire({time: new Date()})
+    public documentLoadSubscriberCallBack( event: Event ): Date
+    {
+        const date = new Date()
+
+        console.log( 'eventListener of type: ' + event.type,
+            'of the element: ' + event.target,
+            'is called from ' + $NAME$.constructor.name,
+            'on: ' + date
+        )
+
+        // publish an event
+        $NAME$.$NAME$Event.fire( { time: date } )
     }
 
     /**
@@ -54,10 +83,10 @@ export default class $NAME$ implements EventInstructorInterface {
      */
     static $NAME$Event: EventFire = {
         name: '$NAME$Event',
-        fire: (detail: any) => {
+        fire: ( detail: any ) => {
             const self = $NAME$.$NAME$Event
             const eventManager: EventManager = new EventManager()
-            eventManager.fire(self.name, detail)
+            eventManager.fire( self.name, detail )
         }
     }
 }
