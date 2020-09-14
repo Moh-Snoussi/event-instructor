@@ -1,6 +1,7 @@
 // @flow
 
-import ValueResolver, { InlineResolver, Resolver } from "./CallBackValueResolver"
+import ValueResolver, { Resolver } from "./ValueResolver"
+import InlineEventManager from "./InlineEventManager"
 
 require( 'events-polyfill' )
 
@@ -14,12 +15,16 @@ export default class EventManager
     private static Singleton: EventManager;
 
     /**
+     *
+     */
+    valueResolver: ValueResolver | undefined
+
+    /**
      * hold events with their function name and options that can be used to unsubscribe from a particular event
      */
-    private static unsubscribeList: { [ key: string ]: UnsubscribableStore } = {}
+    static unsubscribeList: { [ key: string ]: UnsubscribableStore } = {}
 
     private publishers: any = {};
-    private static incrementer: Number = 0
 
     /**
      *
@@ -31,161 +36,6 @@ export default class EventManager
     }
 
     /**
-     * allows a string to have a subscriber prototype
-     * ('selector').subscribe(function(){})
-     */
-    private setStringSubscriber()
-    {
-        const self: EventManager = this
-
-        String.prototype.subscribe = function (
-            eventOrCallBack: EventType | ( ( event: Event | CustomEvent ) => void ) | boolean,
-            callBackOrResolver: ( ( event: Event | CustomEvent, resolvers: InlineResolver ) => void ) | boolean,
-            resolverOrOption: ( ( resolvers: Resolver ) => void ) | EventListenerOptions | boolean,
-            eventOptionsOrOnes: EventListenerOptions | boolean,
-            ones: boolean ): string | null {
-            return self.handleInlineSubscriber.call( this, eventOrCallBack, callBackOrResolver, resolverOrOption, eventOptionsOrOnes, ones )
-        }
-    }
-
-    /**
-     * allows a string to have a subscriber prototype
-     * ('selector').subscribe(function(){})
-     */
-    private setStringEventValueResolver(): void
-    {
-        const self: EventManager = this
-
-        String.prototype.valueResolver = function ( resolver: Resolver ): string | null {
-            return self.handleInlineSubscriber.call( this, resolver )
-        }
-    }
-
-    private handleInlineSubscriber(
-        eventOrCallBack: EventType | ( ( event: Event | CustomEvent ) => void ) | boolean,
-        callBackOrResolver?: ( ( event: Event | CustomEvent, resolvers: InlineResolver ) => void ) | boolean,
-        resolverOrOption?: ( ( resolvers: Resolver ) => void ) | EventListenerOptions | boolean,
-        eventOptionsOrOnes?: EventListenerOptions | boolean,
-        ones?: boolean ): string | null
-    {
-        // eventManager is singleton, the following will not initialize an instance,
-        // this is required as we will be calling this function by binding the scope that will include the string
-        // ('foo').subscribe <== the scope here is the string foo this === 'foo'
-        const self: EventManager = new EventManager()
-
-        let selector: String
-        let eventName: String
-        let element: Document | HTMLElement | null
-        let callBack: Function
-        let resolver: Resolver
-        let options: EventListenerOptions
-        let onlyOnes: boolean = false
-
-        let resolverIsSet: boolean = false
-        let callBackIsSet: boolean = false
-
-        const args: IArguments = arguments
-
-        for ( let arg of args ) {
-            if ( typeof arg !== 'undefined' ) {
-                if ( typeof arg === 'string' ) {
-                    selector = this
-                    element = document.querySelector( selector )
-                    eventName = arg
-
-                } else if ( arg === args[ 0 ] && typeof arg === 'function' && arg.name === 'resolver' ) {
-                    ValueResolver.setResolver( arg, <string> <unknown> this )
-                    return <string> <unknown> this;
-                } else if ( !element ) {
-                    selector = 'document'
-                    element = document
-                    eventName = this
-                }
-
-                if ( typeof arg === 'function' ) {
-                    if ( arg.name === '' || arg.name !== 'resolver' || resolverIsSet ) {
-                        callBack = arg
-                        callBackIsSet = true
-                    } else if ( arg.name === 'resolver' || callBackIsSet ) {
-                        resolver = arg
-                        resolverIsSet = true
-                    }
-                } else if ( typeof arg === 'boolean' ) {
-                    onlyOnes = arg
-                } else if ( typeof options === 'object' ) {
-                    options = arg
-                }
-            }
-        }
-
-        let selectorId: string = EventManager.getSelectorId( {
-            type: <string> selector,
-            value: <string> eventName
-        } )
-
-        let callBackName: string
-
-        const resolverId : string = ValueResolver.getResolverId(selector, eventName)
-
-        if ( resolverIsSet ) {
-            ValueResolver.setResolver( resolver, resolverId )
-        }
-
-        selectorId += EventManager.incrementer++
-
-        if ( callBackIsSet ) {
-            callBackName = 'inline_' + selectorId
-
-            window[ callBackName ] = function ( event ) {
-                // @ts-ignore
-                if ( onlyOnes ) {
-                    event.target.removeEventListener( event.type, window[ callBackName ] )
-                }
-                // @ts-ignore
-                callBack.call({resolverId: resolverId}, event )
-            }
-
-            element?.addEventListener( eventName, window[ callBackName ], options )
-
-            EventManager.unsubscribeList[ callBackName ] = {
-                callBackName: callBackName,
-                event: <string> eventName,
-                element: element,
-                options: options,
-            }
-        }
-
-        return callBackName || selectorId
-    }
-
-    /**
-     * allows a string to have a subscriber prototype
-     * ('selector').subscribe(function(){})
-     */
-    private setStringUnsubscriber()
-    {
-        const self: EventManager = this
-
-        String.prototype.unsubscribe = function (): boolean {
-            return self.unsubscribe( <string> this )
-        }
-    }
-
-    private setStringSubscribeOnes()
-    {
-        const self: EventManager = this
-
-        String.prototype.subscribeOnes = function (
-            eventOrCallBack: EventType | ( ( event: Event | CustomEvent ) => void ) | boolean,
-            callBackOrResolver: ( ( event: Event | CustomEvent, resolvers: InlineResolver ) => void ) | boolean,
-            resolverOrOption: ( ( resolvers: Resolver ) => void ) | EventListenerOptions | boolean,
-            eventOptionsOrOnes: EventListenerOptions | boolean ): string | null {
-
-            return self.handleInlineSubscriber.call( this, eventOrCallBack, callBackOrResolver, resolverOrOption, eventOptionsOrOnes, true )
-        }
-    }
-
-    /**
      *
      * @returns {EventManager}
      */
@@ -193,12 +43,38 @@ export default class EventManager
     {
         if ( !EventManager.Singleton ) {
             EventManager.Singleton = this;
-            this.setStringSubscriber()
-            this.setStringSubscribeOnes()
-            this.setStringEventValueResolver()
-            this.setStringUnsubscriber()
+            this.initialize()
+
         }
         return EventManager.Singleton
+    }
+
+    public initialize(): void
+    {
+        this.valueResolver = new ValueResolver()
+        new InlineEventManager( this )
+    }
+
+    public dataResolver( value: any ): void
+    {
+        // @ts-ignore
+        return EventManager.Singleton.valueResolver?.dataResolver.call( this, value )
+    }
+
+    public setDataResolver( resolver: Resolver, resolverId: string ): string
+    {
+
+        return <string> this.valueResolver?.setResolver( resolver, resolverId )
+    }
+
+    public unresolve( resolverIdentity: string ): boolean
+    {
+       return <boolean> this.valueResolver?.unsetResolver( resolverIdentity )
+    }
+
+    public setResolverPriority( priority: number ): void
+    {
+        return this.valueResolver?.setOrder( priority )
     }
 
     /**
@@ -211,26 +87,6 @@ export default class EventManager
         string
     {
         return typeof selector !== "string" ? selector.type + '___' + selector.value : selector
-    }
-
-    /**
-     * get html element from selector id, please note selector id is not html element id,
-     * selector id is an identifier used internally to get the required element
-     *
-     * @param selectorId
-     */
-    private static getElementFromSelectorId( selectorId: string ): HTMLElement | null
-    {
-        let element: HTMLElement | null
-
-        const selectors = selectorId.split( '___' )
-        if ( selectors.length > 1 ) {
-            // @ts-ignore
-            element = document[ selectors[ 0 ] ]( selectors[ 1 ] )
-        } else {
-            element = document.querySelector( selectorId )
-        }
-        return element
     }
 
     /**
@@ -254,11 +110,8 @@ export default class EventManager
      */
     subscribe( eventsInstructor: Constructable<EventInstructorInterface> ): void
     {
-        const eventsInstructorIns
-            :
-            EventInstructorInterface = new eventsInstructor()
-
-// check if getSubscribers is a defined method
+        const eventsInstructorIns: EventInstructorInterface = new eventsInstructor()
+        // check if getSubscribers is a defined method
         if ( typeof eventsInstructorIns.getSubscribers() === 'undefined' ) {
             throw new Error( 'getSubscribers is not defined on ' + eventsInstructorIns.constructor.name )
         }
@@ -266,8 +119,7 @@ export default class EventManager
         const subscribers: Array<Subscription> = eventsInstructorIns.getSubscribers()
 
         const self: EventManager = this
-
-// register the listeners
+        // register the listeners
         subscribers.forEach( function ( subscriber ) {
             self.setListener( subscriber, eventsInstructorIns );
         } );
@@ -282,6 +134,7 @@ export default class EventManager
     {
         let element: HTMLElement | Document | null
         let selectorId: string
+        const self: EventManager = this
         // if the selector has document then the Document object will be returned
         if ( currentSubscriber.selector === 'document' || !currentSubscriber.selector ) {
             element = document
@@ -313,7 +166,15 @@ export default class EventManager
                 const eventsArray = events.split( ' ' )
                 // adding ability to call this.scope inside the function
                 currentSubscriber.subscribers[ events ].scope = eventInstructor
-                currentSubscriber.subscribers[ events ].resolverId = ValueResolver.getResolverId( selectorId, events )
+
+                let resolverId: string
+                // @ts-ignore
+                if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'resolverId' ) ) {
+                    // @ts-ignore
+                    resolverId = currentSubscriber.subscribers[ events ].resolverId
+                } else {
+                    resolverId = ValueResolver.getResolverId( selectorId, events )
+                }
 
                 const eventOptions: any = currentSubscriber.subscribers[ events ].options
                 for ( const currentEvent in eventsArray ) {
@@ -324,7 +185,10 @@ export default class EventManager
                         // @ts-ignore
                         window[ callBackName ] = function ( event ) {
                             // @ts-ignore
-                            currentSubscriber.subscribers[ events ].callBack( event )
+                            currentSubscriber.subscribers[ events ].callBack.bind( {
+                                dataResolver: self.dataResolver,
+                                resolverId: resolverId
+                            }, event )
                         }
                         // @ts-ignore
                         element?.addEventListener( eventsArray[ currentEvent ], window[ callBackName ], eventOptions )
@@ -367,7 +231,7 @@ export default class EventManager
                     }
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'resolver' ) ) {
                         const resolver = currentSubscriber.subscribers[ events ].resolver
-                        ValueResolver.setResolver( resolver, currentSubscriber.subscribers[ events ].resolverId )
+                        this.setDataResolver( resolver, resolverId )
                     }
                 }
             }

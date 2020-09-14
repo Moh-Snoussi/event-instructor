@@ -1,6 +1,3 @@
-/**
- *
- */
 export default class ValueResolver {
     /**
      * hold all resolver functions on proper order
@@ -11,6 +8,7 @@ export default class ValueResolver {
      */
     static resolverId: string;
     static order: number;
+    private static counter;
     /**
      * return an unique resolver
      * @param selectorId
@@ -22,12 +20,17 @@ export default class ValueResolver {
      * @param resolver
      * @param resolverId
      */
-    static setResolver(resolver: Resolver | undefined, resolverId: string | undefined): void;
+    setResolver(resolver: Resolver | undefined, resolverId: string | undefined): string;
+    /**
+     *
+     * @param resolverIdentity
+     */
+    unsetResolver(resolverIdentity: string | undefined): boolean;
     /**
      * return value that is set in the
      * @param returns
      */
-    static valueResolver(returns: any): any;
+    dataResolver(returns: any): any;
     /**
      * used to set the order of the next resolver
      * @param order

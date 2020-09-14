@@ -1,4 +1,4 @@
-import { Resolver } from "./CallBackValueResolver";
+import ValueResolver, { Resolver } from "./ValueResolver";
 export default class EventManager {
     /**
      * used to allow single instance
@@ -6,51 +6,37 @@ export default class EventManager {
      */
     private static Singleton;
     /**
+     *
+     */
+    valueResolver: ValueResolver | undefined;
+    /**
      * hold events with their function name and options that can be used to unsubscribe from a particular event
      */
-    private static unsubscribeList;
+    static unsubscribeList: {
+        [key: string]: UnsubscribableStore;
+    };
     private publishers;
-    private static incrementer;
     /**
      *
      * @returns {void}
      */
     constructor();
     /**
-     * allows a string to have a subscriber prototype
-     * ('selector').subscribe(function(){})
-     */
-    private setStringSubscriber;
-    /**
-     * allows a string to have a subscriber prototype
-     * ('selector').subscribe(function(){})
-     */
-    private setStringEventValueResolver;
-    private handleInlineSubscriber;
-    /**
-     * allows a string to have a subscriber prototype
-     * ('selector').subscribe(function(){})
-     */
-    private setStringUnsubscriber;
-    private setStringSubscribeOnes;
-    /**
      *
      * @returns {EventManager}
      */
     singleton(): EventManager;
+    initialize(): void;
+    dataResolver(value: any): void;
+    setDataResolver(resolver: Resolver, resolverId: string): string;
+    unresolve(resolverIdentity: string): boolean;
+    setResolverPriority(priority: number): void;
     /**
      * return an id that contain the element and the event
      *
      * @param selector
      */
     static getSelectorId(selector: EventElementSelector): string;
-    /**
-     * get html element from selector id, please note selector id is not html element id,
-     * selector id is an identifier used internally to get the required element
-     *
-     * @param selectorId
-     */
-    private static getElementFromSelectorId;
     /**
      * returns HTMLElement from selector,
      * @param selector
@@ -146,6 +132,12 @@ declare type Unsubscribable = {
             [event: string]: Array<string>;
         };
     };
+};
+declare type UnsubscribableStore = {
+    callBackName: string;
+    event: string;
+    element: HTMLElement | Document | null;
+    options: EventListenerOptions;
 };
 export {};
 //# sourceMappingURL=EventManager.d.ts.map

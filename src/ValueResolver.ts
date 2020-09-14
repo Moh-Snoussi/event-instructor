@@ -1,6 +1,7 @@
 /**
  *
  */
+import InlineEventManager from "./InlineEventManager"
 
 export default class ValueResolver
 {
@@ -14,6 +15,8 @@ export default class ValueResolver
      */
     static resolverId: string
     static order: number = -1
+
+    private static counter = -1
 
     /**
      * return an unique resolver
@@ -30,7 +33,7 @@ export default class ValueResolver
      * @param resolver
      * @param resolverId
      */
-    public static setResolver( resolver: Resolver | undefined, resolverId: string | undefined ): void
+    public setResolver( resolver: Resolver | undefined, resolverId: string | undefined ): string
     {
 
         if ( !ValueResolver.resolvers.hasOwnProperty( resolverId ) ) {
@@ -38,7 +41,7 @@ export default class ValueResolver
         }
         let index: number = -1
         // @ts-ignore
-        if ( resolver.order || this.order >= 0) {
+        if ( resolver.order || this.order >= 0 ) {
             // order is defined in the resolver
             // @ts-ignoreresolver
             index = this.order >= 0 ? this.order : resolver.order
@@ -46,6 +49,10 @@ export default class ValueResolver
         } else if ( typeof resolver === 'function' ) {
             resolver.callBack = resolver
         }
+        // @ts-ignore
+        ValueResolver.counter++
+        const resolverIdentity = resolverId + '-_-' + ValueResolver.counter
+        resolver.id = ValueResolver.counter
 
         if ( !ValueResolver.resolvers[ resolverId ][ index ] ) {
             ValueResolver.resolvers[ resolverId ][ index ] = []
@@ -60,21 +67,53 @@ export default class ValueResolver
         } );
         // reassigning sorted values
         ValueResolver.resolvers[ resolverId ] = ordered
+
+        return resolverIdentity
     }
+
+    /**
+     *
+     * @param resolverIdentity
+     */
+    public unsetResolver( resolverIdentity: string | undefined ): boolean
+    {
+        let success = false
+
+        const identifier: Array = resolverIdentity?.split( '-_-' )
+        if ( ValueResolver.resolvers.hasOwnProperty( identifier[ 0 ] ) ) {
+
+            for ( let resolverKey in ValueResolver.resolvers[ identifier[ 0 ] ] ) {
+                let i = 0
+                for ( let resolverFunction in ValueResolver.resolvers[ identifier[ 0 ] ][ resolverKey ] ) {
+
+                    if ( <number> ValueResolver.resolvers[ identifier[ 0 ] ][ resolverKey ] [ resolverFunction ].id === parseInt( identifier [ 1 ] ) ) {
+                        ValueResolver.resolvers[ identifier[ 0 ] ][ resolverKey ].splice( i, 1 );
+
+                        success = true
+                    }
+                    i++
+                }
+
+            }
+            return success
+        }
+    }
+
 
     /**
      * return value that is set in the
      * @param returns
      */
-    static valueResolver( returns: any ): any
+    public dataResolver( returns: any ): any
     {
         let paramsArray: Array<any> = []
+        paramsArray.push( returns )
         for ( let order in ValueResolver.resolvers[ this.resolverId ] ) {
             if ( ValueResolver.resolvers[ this.resolverId ].hasOwnProperty( order ) ) {
                 // the resolver function will have all returned value of all resolvers that has less priority
                 ValueResolver.resolvers[ this.resolverId ][ order ].forEach( function ( resolverFunction ) {
-                    paramsArray.push( returns )
                     returns = resolverFunction.callBack( returns, paramsArray )
+                    paramsArray.push( returns )
                 } )
             }
         }

@@ -34,7 +34,7 @@ class Foo
 		{
 			[ Foo.FooEvent.name ]: {
 				callBack: function ( event ) {
-					var data = CallBackValueResolver.valueResolver.call(this, event.detail )
+					var data = this.dataResolver.call(this, event.detail )
 
 					console.log( 'new value of date: ', data.time.getMilliseconds() )
 				},
