@@ -1,3 +1,6 @@
+/**
+ *
+ */
 export default class ValueResolver {
     /**
      * hold all resolver functions on proper order
@@ -25,7 +28,7 @@ export default class ValueResolver {
      *
      * @param resolverIdentity
      */
-    unsetResolver(resolverIdentity: string | undefined): boolean;
+    unsetResolver(resolverIdentity: string): boolean;
     /**
      * return value that is set in the
      * @param returns
@@ -40,8 +43,13 @@ export default class ValueResolver {
 export declare type resolverStore = {
     [order: number]: (oldResolver: any) => any;
 };
-export declare type Resolver = (latestResolver: any, allResolvers: Array<any>) => any | {
+interface ResolverFunction {
+    (latestResolver: any, allResolvers: Array<any>): any;
+}
+interface ResolverObject {
     order: number;
     callBack: (latestResolver: any, allResolvers: Array<any>) => any;
-};
+}
+declare type Resolver = ResolverFunction | ResolverObject;
+export {};
 //# sourceMappingURL=ValueResolver.d.ts.map

@@ -5,12 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4dad6535-ee77-40a4-aba8-62ad411392a0" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/StickySelectionHighlights.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/StickySelectionHighlights.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Foo/Foo.js" beforeDir="false" afterPath="$PROJECT_DIR$/Foo/Foo.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/EventManager.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/EventManager.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/EventManager.d.ts.map" beforeDir="false" afterPath="$PROJECT_DIR$/lib/EventManager.d.ts.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/EventManager.js" beforeDir="false" afterPath="$PROJECT_DIR$/lib/EventManager.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/EventManager.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/lib/EventManager.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/ValueResolver.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ValueResolver.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/ValueResolver.d.ts.map" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ValueResolver.d.ts.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/ValueResolver.js" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ValueResolver.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/ValueResolver.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ValueResolver.js.map" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/EventManager.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/EventManager.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/commands/user_default.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/commands/user_default.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ValueResolver.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/ValueResolver.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,12 +71,11 @@
       <option name="extraTypeScriptOptions" value="" />
       <option name="scriptName" value="" />
       <option name="programParameters" value="" />
-      <option name="tsnodePackage" value="~\Projects\event-instructor\node_modules\ts-node" />
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="TypeScript.Unnamed" />
       <item itemvalue="Node.js.create_instructor.ts" />
+      <item itemvalue="TypeScript.Unnamed" />
     </list>
     <recent_temporary>
       <list>
@@ -76,7 +83,10 @@
       </list>
     </recent_temporary>
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SpellCheckerSettings" BundledDictionaries="0" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" Dictionaries="0" CorrectionsLimit="5" DefaultDictionary="application-level" UseSingleDictionary="true" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="4dad6535-ee77-40a4-aba8-62ad411392a0" name="Default Changelist" comment="" />
@@ -92,7 +102,12 @@
     <option name="shellPath" value="wsl.exe" />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="3" />
+    <option name="version" value="2" />
+    <option name="exactExcludedFiles">
+      <list>
+        <option value="$PROJECT_DIR$/src/commands/Templates/EventInstructor.js" />
+      </list>
+    </option>
   </component>
   <component name="WindowStateProjectService">
     <state x="222" y="71" width="1092" height="715" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1599504063491">
@@ -187,9 +202,10 @@
       <screen x="0" y="0" width="1536" height="834" />
     </state>
     <state x="460" y="128" width="616" height="578" key="find.popup/0.0.1536.834@0.0.1536.834" timestamp="1599521850644" />
-    <state x="431" y="155" width="672" height="678" key="search.everywhere.popup" timestamp="1599501060157">
+    <state x="431" y="155" width="672" height="678" key="search.everywhere.popup" timestamp="1600206171355">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
+    <state x="431" y="155" width="672" height="678" key="search.everywhere.popup/0.0.1536.834/0.-1080.1920.1080@0.0.1536.834" timestamp="1600206171355" />
     <state x="431" y="155" width="672" height="678" key="search.everywhere.popup/0.0.1536.834@0.0.1536.834" timestamp="1599501060157" />
   </component>
   <component name="XDebuggerManager">
@@ -198,7 +214,6 @@
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/commands/create_instructor.ts</url>
           <line>246</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>

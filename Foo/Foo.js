@@ -1,5 +1,4 @@
-import EventManager, {Subscription, EventType} from "./../lib/EventManager"
-import CallBackValueResolver from "../lib/CallBackValueResolver"
+import EventManager, {Subscription} from "./../lib/EventManager"
 
 
 /**
@@ -20,44 +19,6 @@ class Foo
 		return this.subscriptions
 	}
 
-	subscriptions = [
-		{
-			selector: 'body',
-			subscribers: {
-				click: {
-					callBack: function ( event ) {
-						this.scope.documentLoadSubscriberCallBack( event )
-					}
-				}
-			}
-		},
-		{
-			[ Foo.FooEvent.name ]: {
-				callBack: function ( event ) {
-					var data = this.dataResolver.call(this, event.detail )
-
-					console.log( 'new value of date: ', data.time.getMilliseconds() )
-				},
-				callBackOnes: function ( event ) {
-					console.log( 'this is fired only ones' )
-				},
-				resolver: function ( latest, allResolvers) {
-					// the resolver can change the value of the data in the callBack function even if the resolver function in a different eventInstructor
-					// it only need to have the same selector as the subscriber where CallBackValueResolver.valueResolver is called
-
-					console.log('all resolver data can be found here: ',allResolvers)
-					console.log( 'old resolver date: ', latest.time.getMilliseconds())
-					console.log('value resolver will create a new date')
-
-					// change the resolver value
-					return {time:new Date()}
-				}
-			}
-		}
-
-	]
-
-
 	/**
 	 *
 	 * @param event
@@ -73,10 +34,50 @@ class Foo
 		)
 
 		// publish an event
-		Foo.FooEvent.fire( { time: date } )
+		Foo.FooEvent.fire( {time: date} )
+	}
+}
+
+/**
+ *
+ * @type []Subscription
+ */
+Foo.subscriptions = [
+	{
+		selector   : 'body',
+		subscribers: {
+			click: {
+				callBack: function ( event ) {
+					this.scope.documentLoadSubscriberCallBack( event )
+				}
+			}
+		}
+	},
+	{
+		[Foo.FooEvent.name]: {
+			callBack    : function ( event ) {
+				var data = this.dataResolver.call( this, event.detail )
+
+				console.log( 'new value of date: ', data.time.getMilliseconds() )
+			},
+			callBackOnes: function ( event ) {
+				console.log( 'this is fired only ones' )
+			},
+			resolver    : function ( latest, allResolvers ) {
+				// the resolver can change the value of the data in the callBack function even if the resolver function in a different eventInstructor
+				// it only need to have the same selector as the subscriber where CallBackValueResolver.valueResolver is called
+
+				console.log( 'all resolver data can be found here: ', allResolvers )
+				console.log( 'old resolver date: ', latest.time.getMilliseconds() )
+				console.log( 'value resolver will create a new date' )
+
+				// change the resolver value
+				return {time: new Date()}
+			}
+		}
 	}
 
-}
+]
 
 /**
  * can be used to fire the event as Foo.FooEvent.fire(details)

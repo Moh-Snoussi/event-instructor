@@ -16,6 +16,7 @@ export default class EventManager {
         [key: string]: UnsubscribableStore;
     };
     private publishers;
+    private static counter;
     /**
      *
      * @returns {void}
@@ -104,22 +105,26 @@ export declare type EventFire = {
     name: string;
     fire: Function;
 };
-export declare type EventFunctions = {
+interface EventFunctions {
     callBack?: (event: Event | CustomEvent) => void;
     callBackOnes?: (event: Event | CustomEvent) => void;
     resolver?: Resolver;
     resolverId?: string;
+    unresolverId?: string;
     scope?: EventInstructorInterface | any;
     options?: any;
-};
-export declare type Subscription = {
+    [key: string]: any;
+}
+interface SubscriptionObject {
     selector?: EventElementSelector;
     subscribers?: {
         [k in EventType]: EventFunctions;
     };
-} | {
+}
+declare type SubscriptionEvents = {
     [j in EventType]: EventFunctions;
 };
+declare type Subscription = SubscriptionObject | SubscriptionEvents;
 export declare type EventType = keyof GlobalEventHandlersEventMap | string;
 declare type EditableSelector = {
     type: string;

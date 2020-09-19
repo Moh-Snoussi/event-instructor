@@ -1,7 +1,6 @@
 /**
  *
  */
-import InlineEventManager from "./InlineEventManager"
 
 export default class ValueResolver
 {
@@ -25,7 +24,7 @@ export default class ValueResolver
      */
     public static getResolverId( selectorId: string, events: string ): string
     {
-        return selectorId + '_' + events
+        return selectorId + '_' + events + ValueResolver.counter++
     }
 
     /**
@@ -45,7 +44,7 @@ export default class ValueResolver
             // order is defined in the resolver
             // @ts-ignoreresolver
             index = this.order >= 0 ? this.order : resolver.order
-            this.order = -1
+            ValueResolver.order = -1
         } else if ( typeof resolver === 'function' ) {
             resolver.callBack = resolver
         }
@@ -75,11 +74,11 @@ export default class ValueResolver
      *
      * @param resolverIdentity
      */
-    public unsetResolver( resolverIdentity: string | undefined ): boolean
+    public unsetResolver( resolverIdentity: string ): boolean
     {
-        let success = false
+        let success : boolean = false
 
-        const identifier: Array = resolverIdentity?.split( '-_-' )
+        const identifier: string[] = resolverIdentity.split( '-_-' )
         if ( ValueResolver.resolvers.hasOwnProperty( identifier[ 0 ] ) ) {
 
             for ( let resolverKey in ValueResolver.resolvers[ identifier[ 0 ] ] ) {
@@ -111,8 +110,10 @@ export default class ValueResolver
         for ( let order in ValueResolver.resolvers[ this.resolverId ] ) {
             if ( ValueResolver.resolvers[ this.resolverId ].hasOwnProperty( order ) ) {
                 // the resolver function will have all returned value of all resolvers that has less priority
-                ValueResolver.resolvers[ this.resolverId ][ order ].forEach( function ( resolverFunction ) {
-                    returns = resolverFunction.callBack( returns, paramsArray )
+                ValueResolver.resolvers[ this.resolverId ][ order ].forEach( function ( resolverFunction : Resolver) {
+                    if ('callBack' in resolverFunction) {
+                        returns = resolverFunction.callBack( returns, paramsArray )
+                    }
                     paramsArray.push( returns )
                 } )
             }
@@ -126,9 +127,11 @@ export default class ValueResolver
      */
     public setOrder( order: number ): void
     {
-        this.order = number
+        ValueResolver.order = order
     }
 }
 
 export type resolverStore = { [ order: number ]: ( oldResolver: any ) => any }
-export type Resolver = ( latestResolver: any, allResolvers: Array<any> ) => any | { order: number, callBack: ( latestResolver: any, allResolvers: Array<any> ) => any }
+interface ResolverFunction { ( latestResolver: any, allResolvers: Array<any> ): any }
+interface ResolverObject { order: number, callBack: ( latestResolver: any, allResolvers: Array<any> ) => any }
+type Resolver = ResolverFunction | ResolverObject

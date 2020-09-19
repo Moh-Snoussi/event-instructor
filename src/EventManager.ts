@@ -25,6 +25,7 @@ export default class EventManager
     static unsubscribeList: { [ key: string ]: UnsubscribableStore } = {}
 
     private publishers: any = {};
+    private static counter: number = 0
 
     /**
      *
@@ -82,9 +83,7 @@ export default class EventManager
      *
      * @param selector
      */
-    public static getSelectorId( selector: EventElementSelector
-    ):
-        string
+    public static getSelectorId( selector: EventElementSelector ): string
     {
         return typeof selector !== "string" ? selector.type + '___' + selector.value : selector
     }
@@ -94,9 +93,7 @@ export default class EventManager
      * @param selector
      * @private
      */
-    private static
-
-    getElement( selector: EventElementSelector ): HTMLElement | null
+    private static getElement( selector: EventElementSelector ): HTMLElement | null
     {
         // @ts-ignore
         return typeof selector === "string" ? document.querySelector( selector ) : document[ selector.type ]( selector.value )
@@ -174,12 +171,14 @@ export default class EventManager
                     resolverId = currentSubscriber.subscribers[ events ].resolverId
                 } else {
                     resolverId = ValueResolver.getResolverId( selectorId, events )
+                    currentSubscriber.subscribers[ events ].resolverId = resolverId
                 }
 
                 const eventOptions: any = currentSubscriber.subscribers[ events ].options
                 for ( const currentEvent in eventsArray ) {
+                    EventManager.counter++
 
-                    const callBackName: string = instructorName + '_' + selectorId + '_' + eventsArray[ currentEvent ]
+                    const callBackName: string = instructorName + '_' + selectorId + '_' + eventsArray[ currentEvent ] + EventManager.counter
 
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'callBack' ) ) {
                         // @ts-ignore
@@ -203,6 +202,7 @@ export default class EventManager
                             options: eventOptions,
                         }
                     }
+                    currentSubscriber.subscribers[ events ].unsubscriberId = callBackName
 
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'callBackOnes' ) ) {
 
@@ -231,7 +231,7 @@ export default class EventManager
                     }
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'resolver' ) ) {
                         const resolver = currentSubscriber.subscribers[ events ].resolver
-                        this.setDataResolver( resolver, resolverId )
+                        currentSubscriber.subscribers[ events ].unresolverId = this.setDataResolver( resolver, resolverId )
                     }
                 }
             }
@@ -371,24 +371,33 @@ export type EventFire = {
     fire: Function
 }
 
-export type EventFunctions = {
+interface EventFunctions {
     callBack?: ( event: Event | CustomEvent ) => void,
     callBackOnes?: ( event: Event | CustomEvent ) => void,
     resolver?: Resolver,
     resolverId?: string,
+    unresolverId?: string,
     scope?: EventInstructorInterface | any,
-    options?: any
+    options?: any,
+    [key: string]: any
 }
 
-export type Subscription = {
+interface SubscriptionObject {
     selector?: EventElementSelector,
     subscribers?:
         {
             [k in EventType]: EventFunctions
         },
-} | {
+}
+
+
+
+type SubscriptionEvents =
+{
     [j in EventType]: EventFunctions
 }
+
+type Subscription = SubscriptionObject | SubscriptionEvents
 
 export type EventType = keyof GlobalEventHandlersEventMap | string
 
