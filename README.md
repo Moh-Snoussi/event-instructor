@@ -8,115 +8,62 @@
 
 </div>
 
-This module help writing javascript/typescript more efficient by using the pub/sub patern.
+It helps organize code using the sub/pub pattern:
 
-We register different event listner in different classes, then all event-listners will be grouped, this mean if you have many event-listners for the same event and element, the module will group them together in a one event listner
+Sub : subscribe = addEventListner
 
+Pub : publish = CustomEvent
 
-## 🏁 Install <a name = "install"></a>
+Usage can be categorized into two categories : 
+- inline implementation
+- oop implementation
 
-```
-npm install event-instructor --save
-```
-
-## Usage
-```
-npm explore event-instructor npm run create:instructor
-```
-
-the command will guide you the it will generate an Instructor class that look like this:
-```
-import "foo.less"
-
-import {EventManager} from "event-instructor"
-import {Subscriptions, DynamicElements, EventFire} from "event-instructor/Types";
-import ElementsInstructor from "event-instructor/ElementsInstructor";
-
-/**
- * Foo
- *
- * demonstrationClass
- *
- */
-export default class Foo extends ElementsInstructor
-{
-
-    /**
-     *
-     * @returns {Subscriptions}
-     */
-    getSubscribers(): Subscriptions
-    {
-        return this.subscriptions
-    }
-
-
-    /**
-     *
-     */
-    subscriptions: Subscriptions = {
-        // unique key can be anything that will be useful in debugging
-        uniqueKey: {
-            // the elementId we are subscribing to, can be an id of an element or a "document" or a "window"
-            elementId: {
-                // the event we are subscribing to, can be string separated by comma eg: "click, customEvent"
-                eventName: {
-                    callBack: function (event) {
-                        this.scope.scopeCallback(event)
-                    },
-                }
-            }
-        }
-    }
-
-    /**
-     *
-     * @param event
-     */
-    public scopeCallback(event: Event): void
-    {
-      console.log('FooInstructor is listening')
-
-        // will toggle the attribues that are defined in the dynamicElements
-        // this will add blink to the classes of the element that have Foo as id: see this.dynamicElements
-        this.instruct(this.dynamicElements)
-
-        // this.instruct(this.dynamicElements, true)
-        // will remove added blink from the classes
-    }
-
-    /**
-     * can be used to fire the event as Foo.FooEvent.fire(details)
-     * or can be listened to in other Instructor by Foo.FooEvent.name
-     */
-    static FooEvent: EventFire = {
-        name: 'FooEvent',
-        fire: ( detail )  => {
-            const self = Foo.FooEvent
-            const eventManager : EventManager = new EventManager()
-            eventManager.fire( self.name, detail )
-        }
-    }
-
-    /**
-     */
-    dynamicElements: DynamicElements = {
-      // Foo is the element Id;
-        Foo: {classList: 'blink'},
-    }
-}
-```
-the event publisher and subscribers need to be defined, then in the entry javascript (main.js / app.js) we subscribe as follow
+###Inline
+Listening to an event:
 
 ```
-const {EventManager} = require( "event-instructor" )
-import {Foo} from "./DirectoryWhere/Foo" // change the directoryWhere
-const eventManager = new EventManager();
-eventManager
-        .subscribe( Foo )
-        .subscribe( anotherInstructor ) // you can subscribe to another Instructor
-        .listen() // register all subscribers and start listening to the events
-
+const selectorClickSubscriber = ('selector').subscribe ('click', function (event){  console.log(event) }
 ```
 
+Unsubscribing:
 
+```
+(selectorClickSubscriber).unsubscribe()
+```
+
+Listening to the event only ones:
+```
+('selector').subscribeOnes('click', function (event){ console.log('this is fired only ones')})
+```
+
+Or if the event is bound on the document then you can include the event name and anonym function like this: ;
+```
+('event'). subscribe (function (event) { console.log(event) })
+```
+
+\\ An option can be passed as an object
+\\ you can read more about the options here
+const subscriber = ('selector').subscribe ('click', function (event){  console.log(event) }, {options})
+
+\\ resolvers resolve a value that is requested on an event callback: 
+
+('event').subscribe(function (event) { const resolvedValue = ValueResolver.resolve('foo')
+console.log('new resolved value: ', resolvedValue) // fooBar})
+
+('event').(resolved(oldValue, allResolverValueArray) { console.log(oldValue, allResolverValueArray)
+Return oldValue + 'Bar' })
+ For many resolvers you can set the priority of the resolver function
+
+('event').(resolved(oldValue, allResolverValueArray) { console.log(oldValue, allResolverValueArray)
+ValueResolver.setOrder(1)
+Return oldValue + 'Bar' })
+
+The resolvedValue will be 'fooBarBaz'
+
+Publisher are simpler
+EventManager.publish({name: 'eventName', options})
+
+
+The above implementation is a fast usage and is not advised mainly because code can be hard to maintain and what I call events hell where things are subscriber and fired from anywhere, second reason is as you may already noticed that the new prototypes of the string is implemented, there for is advised to use the oop aproche, that will be described in the next section
+
+The oop aproche has a command line tool that can generate Eventnstructor

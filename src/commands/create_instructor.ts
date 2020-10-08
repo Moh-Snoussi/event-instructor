@@ -6,8 +6,8 @@ const inquirer = require('inquirer');
 const path = require('path')
 const fs = require('fs')
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
-var _ = require('lodash');
-var fuzzy = require('fuzzy');
+const _ = require('lodash');
+const fuzzy = require('fuzzy');
 const dirTree = require("directory-tree");
 
 class CreateInstructor {
@@ -23,17 +23,18 @@ class CreateInstructor {
         {
             name: 'name',
             type: 'input',
-            message: 'enter the name of the ElementInstructor',
-            validate: function (value) {
+            message: 'enter the name of the EventInstructor',
+            validate: function (value : string) {
                 if (value.length) {
 
+                    // @ts-ignore
                     if (value.match(/^[a-zA-Z]*/)[0] !== value) {
-                        return 'the provided name is not qualified, please enter an ElementInstructor name that has only Latin letters.';
+                        return 'the provided name is not qualified, please enter an EventInstructor name that has only Latin letters.';
                     }
                     clear();
                     return true;
                 } else {
-                    return 'ElementInstructor name can not be empty, Please enter a new ElementInstructor name.';
+                    return 'EventInstructor name can not be empty, Please enter a new EventInstructor name.';
                 }
             }
         },
@@ -86,9 +87,11 @@ class CreateInstructor {
     ];
 
     private setDirectoryOptions(): void {
-        dirTree("./../../../", {exclude: [/node_modules/, /vendor/, /var/, /cache/, /\.[a-z]/]}, null,
-            (item, PATH, stats) => {
+        const appDir = require('app-root-path').toString()
+        dirTree(appDir, {exclude: [/node_modules/, /vendor/, /var/, /cache/, /\.[a-z]/]}, null,
+            (item: { path: string; }, PATH: any, stats: any) => {
                 const cleanPath = item.path.replace(/\.\.\//g, "");
+                // @ts-ignore
                 CreateInstructor.treeRelative[cleanPath] = item.path
                 CreateInstructor.tree.push(cleanPath)
             });
@@ -107,13 +110,13 @@ class CreateInstructor {
 
         this.readCachedData().then(cached => {
 
-            const questions =  this.questions
+            const questions = this.questions
             if (cached.cached) {
                 questions.push(...this.defaultQuestions)
             }
             questions.push(...this.constantQuestions)
 
-            inquirer.prompt(questions).then((data) => {
+            inquirer.prompt(questions).then((data: { default?: any; style: any; language: any; directory: any; name?: string; description?: string; }) => {
                 if (data.default == '' && data.default !== undefined) {
                     data.style = cached.style
                     data.language = cached.language
@@ -125,26 +128,26 @@ class CreateInstructor {
     }
 
 
-    private async searchStates(answers, input) : Promise<any> {
+    private async searchStates(answers: any, input: any): Promise<any> {
         return await CreateInstructor.fuzzyFinder(answers, input, CreateInstructor.tree);
     }
 
-    private static async searchLanguage(answers, input) : Promise<any> {
+    private static async searchLanguage(answers: any, input: any): Promise<any> {
         return await CreateInstructor.fuzzyFinder(answers, input, ['JavaScript', 'JSX', 'TypeScript', 'TSX', 'Flow'])
             ;
     }
 
-    private static async searchStyle(answers, input) : Promise<any> {
+    private static async searchStyle(answers: any, input: any): Promise<any> {
         return await CreateInstructor.fuzzyFinder(answers, input, ['nothing', 'css', 'less', 'scss', 'sass'])
             ;
     }
 
-    public static async fuzzyFinder(answers, input, available) : Promise<any>{
+    public static async fuzzyFinder(answers: any, input: string, available: string[]): Promise<any> {
         input = input || '';
         return new Promise(function (resolve) {
             setTimeout(function () {
                 var fuzzyResult = fuzzy.filter(input, available);
-                const results = fuzzyResult.map(function (el) {
+                const results = fuzzyResult.map(function (el: { original: any; }) {
                     return el.original;
                 });
                 results.push(new inquirer.Separator());
@@ -158,12 +161,16 @@ class CreateInstructor {
      * @param data
      * @private
      */
-    private generateFiles(data: { name: string, description: string, language: string, directory: string, style: string }): void {
+    private generateFiles(data: { default?: any; style: any; language: any; directory: any; name?: string; description?: string }): void {
+        // @ts-ignore
         const nameFirstCapitalize = data.name.charAt(0).toUpperCase() + data.name.slice(1)
-        const inputFile: string = path.normalize(__dirname + path.sep + 'Templates' + path.sep + 'ElementInstructor' + (this.extension)[data.language])
-        const outputDirectory: string = path.normalize(__dirname + path.sep + '../' + CreateInstructor.treeRelative[data.directory] + path.sep + data.name + path.sep)
+        // @ts-ignore
+        const inputFile: string = path.normalize(__dirname + path.sep + 'Templates' + path.sep + 'EventInstructor' + (this.extension)[data.language])
+        // @ts-ignore
+        const outputDirectory: string = path.normalize(CreateInstructor.treeRelative[data.directory] + path.sep + data.name + path.sep)
+        // @ts-ignore
         const outputFile = outputDirectory + nameFirstCapitalize + this.extension[data.language]
-        if (!fs.existsSync(outputDirectory)){
+        if (!fs.existsSync(outputDirectory)) {
             fs.mkdirSync(outputDirectory);
         }
 
@@ -174,11 +181,13 @@ class CreateInstructor {
         if (data.style !== 'nothing') {
 
             const inputStyleFile: string = path.normalize(__dirname + path.sep + 'Templates' + path.sep + 'style' + '.' + data.style)
+            // @ts-ignore
             const outputStyleFile: string = outputDirectory + data.name.toLowerCase() + '.' + data.style
 
+            // @ts-ignore
             styleImport = 'import "' + data.name.toLowerCase() + '.' + data.style + '"'
 
-            fs.copyFile(inputStyleFile, outputStyleFile, (err) => {
+            fs.copyFile(inputStyleFile, outputStyleFile, (err: any) => {
                 if (err) throw err;
                 //Load the library and specify options
                 console.log(logSymbols.success + ' ' + data.style + ' File was created to ' + chalk.underline(outputStyleFile));
@@ -186,19 +195,21 @@ class CreateInstructor {
 
         }
 
-        fs.copyFile(inputFile, outputFile, (err) => {
+        fs.copyFile(inputFile, outputFile, (err: any) => {
             if (err) throw err;
             //Load the library and specify options
             const replace = require('replace-in-file');
             const options = {
                 files: outputFile,
-                from: [/\$NAME\$/g, /\$DESCRIPTION\$/g, /\$STYLE\$/g],
+                from: [/\$NAME\$/g, /\$DESCRIPTION\$/g, /\$STYLE\$/g
+                ],
                 to: [nameFirstCapitalize, data.description, styleImport],
             };
             replace.sync(options)
             console.log(logSymbols.success + ' ' + data.language + 'File was created to ' + chalk.underline(outputFile));
 
-            fs.writeFile (__dirname + path.sep + "user_default.json", JSON.stringify(data), function(err) {
+            // @ts-ignore
+            fs.writeFile(__dirname + path.sep + "user_default.json", JSON.stringify(data), function (err) {
                     if (err) throw err;
                     userDefault = true;
                 }
@@ -214,7 +225,7 @@ class CreateInstructor {
             console.log(`${chalk.red('const')} ${chalk.blue('eventManager')} = new ${chalk.blue.bold('EventManager')}();`)
             console.log(`${chalk.blue('eventManager')}`)
             console.log(`\t.subscribe( ${chalk.blue.bold(nameFirstCapitalize)} )`)
-            console.log(`\t.subscribe( ${chalk.blue.bold('anotherInstructor' )} )${chalk.gray(' // you can subscribe to another Instructor')}`)
+            console.log(`\t//.subscribe( ${chalk.blue.bold('anotherInstructor')} )${chalk.gray(' // you can subscribe to another Instructor')}`)
             console.log(`\t.listen() ${chalk.gray('// register all subscribers and start listening to the events')}`);
         });
     }
@@ -225,15 +236,20 @@ class CreateInstructor {
      * @private
      */
     private async readCachedData(): Promise<any> {
+        const data = {
+            cached: false
+        };
+
         return new Promise((resolve, reject) => {
             if (fs.existsSync(__dirname + path.sep + 'user_default.json')) {
-                fs.readFile(__dirname + path.sep + 'user_default.json', 'utf8', function(err, data) {
+                // @ts-ignore
+                fs.readFile(__dirname + path.sep + 'user_default.json', 'utf8', function (err, data) {
                     if (err) reject(err)
                     data = JSON.parse(data)
                     data.cached = true
-                    resolve(data)
                 });
             }
+            resolve(data)
         })
     }
 }
