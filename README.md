@@ -8,17 +8,18 @@
 
 </div>
 
+(WORK IN PROGRESS)
 It helps organize code using the sub/pub pattern:
 
-Sub : subscribe = addEventListner
+Sub : subscribe is like addEventListner
 
-Pub : publish = CustomEvent
+Pub : publish is like dispatching CustomEvent
 
 Usage can be categorized into two categories : 
 - inline implementation
 - oop implementation
 
-###Inline
+### Inline
 Listening to an event:
 
 ```
@@ -64,6 +65,6 @@ Publisher are simpler
 EventManager.publish({name: 'eventName', options})
 
 
-The above implementation is a fast usage and is not advised mainly because code can be hard to maintain and what I call events hell where things are subscriber and fired from anywhere, second reason is as you may already noticed that the new prototypes of the string is implemented, there for is advised to use the oop aproche, that will be described in the next section
+The above implementation is a fast usage and is not advised mainly because code can be hard to maintain and what I call events hell where things are subscriber and fired from anywhere, second reason is as you may already noticed that the new prototypes of the string is implemented, there for is advised to use the oop way, that will be described in the next section
 
-The oop aproche has a command line tool that can generate Eventnstructor
+The oop has a command line tool that can generate Eventnstructor

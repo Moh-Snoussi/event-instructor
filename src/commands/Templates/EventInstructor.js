@@ -84,7 +84,7 @@ export default class $NAME$ {
      */
     static $NAME$Event = {
         name: '$NAME$Event',
-        fire: (detail: any) => {
+        fire: (detail) => {
             const self = $NAME$.$NAME$Event
             const eventManager = new EventManager()
             eventManager.fire(self.name, detail)
