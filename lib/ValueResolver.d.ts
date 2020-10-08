@@ -17,18 +17,18 @@ export default class ValueResolver {
      * @param selectorId
      * @param events
      */
-    static getResolverId(selectorId: string, events: string): string;
+    static getResolverId(selectorId: string, events: string, increment?: boolean): string;
     /**
      *
      * @param resolver
      * @param resolverId
      */
-    setResolver(resolver: Resolver | undefined, resolverId: string | undefined): string;
+    static setResolver(resolver: Resolver, resolverId: string): string;
     /**
      *
      * @param resolverIdentity
      */
-    unsetResolver(resolverIdentity: string): boolean;
+    static unsetResolver(resolverIdentity: string): boolean;
     /**
      * return value that is set in the
      * @param returns
@@ -38,7 +38,7 @@ export default class ValueResolver {
      * used to set the order of the next resolver
      * @param order
      */
-    setOrder(order: number): void;
+    static setOrder(order: number): void;
 }
 export declare type resolverStore = {
     [order: number]: (oldResolver: any) => any;
@@ -47,9 +47,10 @@ interface ResolverFunction {
     (latestResolver: any, allResolvers: Array<any>): any;
 }
 interface ResolverObject {
+    id?: number;
     order: number;
     callBack: (latestResolver: any, allResolvers: Array<any>) => any;
 }
-declare type Resolver = ResolverFunction | ResolverObject;
+export declare type Resolver = ResolverFunction & ResolverObject;
 export {};
 //# sourceMappingURL=ValueResolver.d.ts.map

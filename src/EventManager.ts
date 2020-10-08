@@ -65,17 +65,17 @@ export default class EventManager
     public setDataResolver( resolver: Resolver, resolverId: string ): string
     {
 
-        return <string> this.valueResolver?.setResolver( resolver, resolverId )
+        return <string> ValueResolver.setResolver( resolver, resolverId )
     }
 
     public unresolve( resolverIdentity: string ): boolean
     {
-       return <boolean> this.valueResolver?.unsetResolver( resolverIdentity )
+       return <boolean> ValueResolver.unsetResolver( resolverIdentity )
     }
 
     public setResolverPriority( priority: number ): void
     {
-        return this.valueResolver?.setOrder( priority )
+        return ValueResolver.setOrder( priority )
     }
 
     /**
@@ -93,8 +93,15 @@ export default class EventManager
      * @param selector
      * @private
      */
-    private static getElement( selector: EventElementSelector ): HTMLElement | null
+    private static getElement( selector: EventElementSelector ): Document | Window | HTMLElement | null
     {
+        if (selector === 'window') {
+            return window
+        }
+
+        if (selector === 'document') {
+            return document
+        }
         // @ts-ignore
         return typeof selector === "string" ? document.querySelector( selector ) : document[ selector.type ]( selector.value )
     }
@@ -105,7 +112,7 @@ export default class EventManager
      *
      * @param eventsInstructor
      */
-    subscribe( eventsInstructor: Constructable<EventInstructorInterface> ): void
+    subscribe( eventsInstructor: Constructable<EventInstructorInterface> ): Array<Unsubscribable>
     {
         const eventsInstructorIns: EventInstructorInterface = new eventsInstructor()
         // check if getSubscribers is a defined method
@@ -116,10 +123,14 @@ export default class EventManager
         const subscribers: Array<Subscription> = eventsInstructorIns.getSubscribers()
 
         const self: EventManager = this
+        let returns : Array<Unsubscribable>= [];
         // register the listeners
         subscribers.forEach( function ( subscriber ) {
-            self.setListener( subscriber, eventsInstructorIns );
+            returns.push(self.setListener( subscriber, eventsInstructorIns ));
         } );
+
+        return returns
+
     }
 
     /**
@@ -127,7 +138,7 @@ export default class EventManager
      * @param currentSubscriber
      * @param eventInstructor
      */
-    private setListener( currentSubscriber: Subscription, eventInstructor: EventInstructorInterface ): Unsubscribable
+    private setListener( currentSubscriber: Subscription, eventInstructor: EventInstructorInterface ): Array<Unsubscribable>
     {
         let element: HTMLElement | Document | null
         let selectorId: string
@@ -170,8 +181,13 @@ export default class EventManager
                     // @ts-ignore
                     resolverId = currentSubscriber.subscribers[ events ].resolverId
                 } else {
-                    resolverId = ValueResolver.getResolverId( selectorId, events )
-                    currentSubscriber.subscribers[ events ].resolverId = resolverId
+                    if (selectorId === 'document') {
+                        resolverId = events
+                       currentSubscriber.subscribers[ events ].resolverId = event 
+                    } else {
+                    resolverId = ValueResolver.getResolverId( selectorId, events, false )
+                    currentSubscriber.subscribers[ events ].resolverId = event
+                    }
                 }
 
                 const eventOptions: any = currentSubscriber.subscribers[ events ].options
@@ -179,22 +195,24 @@ export default class EventManager
                     EventManager.counter++
 
                     const callBackName: string = instructorName + '_' + selectorId + '_' + eventsArray[ currentEvent ] + EventManager.counter
-
+                    
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'callBack' ) ) {
                         // @ts-ignore
                         window[ callBackName ] = function ( event ) {
                             // @ts-ignore
-                            currentSubscriber.subscribers[ events ].callBack.bind( {
+                            currentSubscriber.subscribers[ events ].callBack.call( {
+                                scope: eventInstructor,
                                 dataResolver: self.dataResolver,
                                 resolverId: resolverId
                             }, event )
+                            currentSubscriber.subscribers[ events ].subscriberId = callBackName
                         }
                         // @ts-ignore
                         element?.addEventListener( eventsArray[ currentEvent ], window[ callBackName ], eventOptions )
-
+                        
                         // returned value will contain information that can be referred to when unsubscribe
                         returns[ instructorName ][ selectorId ][ events ].push( callBackName )
-
+                        
                         EventManager.unsubscribeList[ callBackName ] = {
                             callBackName: callBackName,
                             event: eventsArray[ currentEvent ],
@@ -202,32 +220,38 @@ export default class EventManager
                             options: eventOptions,
                         }
                     }
-                    currentSubscriber.subscribers[ events ].unsubscriberId = callBackName
-
+                    currentSubscriber.subscribers[ events ].subscriberId = callBackName
+                    
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'callBackOnes' ) ) {
-
+                        
                         const onesCallBackName = callBackName + 'ones';
-
+                        
                         // @ts-ignore
                         window[ onesCallBackName ] = function ( event ) {
                             // @ts-ignore
                             event.target.removeEventListener( event.type, window[ onesCallBackName ] );
                             // @ts-ignore
-                            currentSubscriber.subscribers[ events ].callBackOnes( event )
+                            currentSubscriber.subscribers[ events ].callBackOnes.call( {
+                                scope: eventInstructor,
+                                dataResolver: self.dataResolver,
+                                resolverId: resolverId
+                            },
+                            event)
                         }
                         // @ts-ignore
                         element?.addEventListener( eventsArray[ currentEvent ], window[ onesCallBackName ], eventOptions )
-
+                        
                         // returned value will contain information that can be referred to when unsubscribe
                         // @ts-ignore
                         returns[ instructorName ][ selectorId ][ events ].push( callBackName )
-
+                        
                         EventManager.unsubscribeList[ onesCallBackName ] = {
                             callBackName: onesCallBackName,
                             event: eventsArray[ currentEvent ],
                             element: element,
                             options: eventOptions,
                         }
+                        currentSubscriber.subscribers[ events ].onesSubscriberId = onesCallBackName
                     }
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'resolver' ) ) {
                         const resolver = currentSubscriber.subscribers[ events ].resolver
@@ -283,7 +307,7 @@ export default class EventManager
             const element: HTMLElement | Document | null = EventManager.unsubscribeList[ unsubscribableId ].element
             const event: string = EventManager.unsubscribeList[ unsubscribableId ].event
             const callBackName: string = EventManager.unsubscribeList[ unsubscribableId ].callBackName
-            const options: string = EventManager.unsubscribeList[ unsubscribableId ].options
+            const options: any = EventManager.unsubscribeList[ unsubscribableId ].options
 
             // @ts-ignore
             element?.removeEventListener( event, window[ callBackName ], options )
@@ -304,6 +328,8 @@ export default class EventManager
         subscribers.forEach( function ( eventInstructor: Constructable<EventInstructorInterface> ) {
             self.subscribe( eventInstructor );
         } )
+
+        EventManager.eventsRegisteredEvent.fire();
     }
 
     /**
@@ -315,7 +341,6 @@ export default class EventManager
         const ev = new CustomEvent( eventObject.name, { detail: eventObject.detail, cancelable: true } );
         ( eventObject.element ? eventObject.element : document ).dispatchEvent( ev );
 
-// @ts-ignore
         this.publishers[ eventObject.name ] = { detail: eventObject.detail }
     }
 
@@ -373,7 +398,9 @@ export type EventFire = {
 
 interface EventFunctions {
     callBack?: ( event: Event | CustomEvent ) => void,
+    subscriberId?: string,
     callBackOnes?: ( event: Event | CustomEvent ) => void,
+    onesSubscriberId?: string,
     resolver?: Resolver,
     resolverId?: string,
     unresolverId?: string,
@@ -386,7 +413,7 @@ interface SubscriptionObject {
     selector?: EventElementSelector,
     subscribers?:
         {
-            [k in EventType]: EventFunctions
+            [k in EventType]?: EventFunctions
         },
 }
 
@@ -397,13 +424,15 @@ type SubscriptionEvents =
     [j in EventType]: EventFunctions
 }
 
-type Subscription = SubscriptionObject | SubscriptionEvents
 
-export type EventType = keyof GlobalEventHandlersEventMap | string
+
+export type Subscription = SubscriptionObject | SubscriptionEvents
+
+export type EventType = keyof GlobalEventHandlersEventMap & string
 
 type EditableSelector = {
     type: string,
-    value: string
+    value: string,
 }
 
 type EventElementSelector = EditableSelector | string

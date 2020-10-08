@@ -1,9 +1,9 @@
-import { EventFire, EventInstructorInterface, Subscription } from "./../../EventManager";
+import { EventFire, EventInstructorInterface, Subscription } from "./../EventManager";
 /**
- * $NAME$
- * $DESCRIPTION$
+ * Bar
+ * hello
  */
-export default class $NAME$ implements EventInstructorInterface {
+export default class Bar implements EventInstructorInterface {
     /**
      *
      * @returns {Subscription}
@@ -19,6 +19,6 @@ export default class $NAME$ implements EventInstructorInterface {
      * can be used to fire the event as Foo.FooEvent.fire(details)
      * or can be listened to in other Instructor by Foo.FooEvent.name
      */
-    static $NAME$Event: EventFire;
+    static BarEvent: EventFire;
 }
-//# sourceMappingURL=EventInstructor.d.ts.map
+//# sourceMappingURL=Bar.d.ts.map

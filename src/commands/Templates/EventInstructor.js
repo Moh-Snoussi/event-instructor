@@ -1,61 +1,93 @@
-import {EventManager} from "event-instructor"
-import {Subscriptions} from "event-instructor/Types";
-import ElementsInstructor from "event-instructor/ElementsInstructor";
+import EventManager, {Subscription, EventFire} from "event-instructor"
 
 $STYLE$
 
 /**
  * $NAME$
- *
  * $DESCRIPTION$
- *
  */
-class $NAME$
-{
+export default class $NAME$ {
 
-	/**
-	 *
-	 * @returns {Subscriptions}
-	 */
+    /**
+     *
+     * @returns {Array<Subscription>}
+     */
 	getSubscribers()
 	{
-		return {
-			// unique key can be anything that will be useful in debugging
-			uniqueKey: {
-				// the elementId we are subscribing to, can be an id or "document" or "window"
-				elementId: {
-					// the event we are subscribing to, can be string separated by space eg: "click customEvent"
-					eventName: {
-						callBack: function ( event ) {
-							this.scope.scopeCallback( event )
-						}
-					}
-				}
-			}
-		}
+        return this.subscriptions
 	}
-
+	
 	/**
-	 *
-	 * @param event
+	 * @type {Array<Subscription>}
 	 */
-	scopeCallback( event )
+    subscriptions = [
+        {
+            selector: 'document',
+            subscribers: {
+                load: {
+                    callBack: function (event) {
+                        this.scope.documentLoadSubscriberCallBack(event)
+                    }
+                }
+            }
+        },
+        {
+            [$NAME$.$NAME$Event.name]: {
+                callBack: function (event) {
+                    var data = this.dataResolver.call(this, event.detail);
+
+                    console.log("new value of date: ", data.time.getMilliseconds());
+                },
+                callBackOnes: function (event) {
+                    console.log("this is fired only ones");
+                },
+                resolver: function (latest, allResolvers) {
+                    // the resolver can change the value of the data in the callBack function even if the resolver function in a different eventInstructor
+                    // it only need to have the same selector as the subscriber where CallBackValueResolver.valueResolver is called
+                    // so if you want to modify the value from a different Class just in the 
+                    // subscriptions listen to the $NAME$.$NAME$Event.name and add a resolver function
+
+                    console.log("all resolver data can be found here: ", allResolvers);
+                    console.log("old resolver date: ", latest.time.getMilliseconds());
+                    console.log("value resolver will create a new date");
+
+                    // change the resolver value
+                    return { time: new Date() };
+                }
+            }
+        }
+    ]
+
+    /**
+     *
+     * @param {Event}
+     */
+	documentLoadSubscriberCallBack(event)
 	{
-		console.log( "I am fired from ".$NAME$ )
-	}
-}
 
-/**
- * can be used to fire the event as Foo.FooEvent.fire(details)
- * or can be listened to in other Instructor by Foo.FooEvent.name
- */
-$NAME$.$NAME$Event = {
-	name: '$NAME$Event',
-	fire: ( detail ) => {
-		const self = $NAME$.$NAME$Event
-		const eventManager = new EventManager()
-		eventManager.fire( self.name, detail )
-	}
-}
+        const date = new Date();
 
-export default $NAME$
+        console.log(
+            "eventListener of type: " + event.type,
+            ", of the element: " + event.target,
+            "is called from " + $NAME$.constructor.name,
+            ", on date millisecond: " + date.getMilliseconds()
+        );
+        // publish an event
+        $NAME$.$NAME$Event.fire({ time: date })
+    }
+
+    /**
+     * can be used to fire the event as $NAME$.$NAME$Event.fire(details)
+     * or can be listened to in other Instructor by $NAME$.$NAME$Event.name
+	 * @type {EventFire}
+     */
+    static $NAME$Event = {
+        name: '$NAME$Event',
+        fire: (detail: any) => {
+            const self = $NAME$.$NAME$Event
+            const eventManager = new EventManager()
+            eventManager.fire(self.name, detail)
+        }
+    }
+}

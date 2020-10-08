@@ -1,80 +1,75 @@
-// import EventManager, {EventFire, EventInstructorInterface, Subscriptions} from "event-instructor"
-import ValueResolver from "../../CallBackValueResolver"
+import EventManager, {EventFire, EventInstructorInterface, Subscriptions} from "event-instructor"
 
 $STYLE$
-
-import EventManager, { EventFire, EventInstructorInterface, Subscription } from "./../../EventManager"
 
 /**
  * $NAME$
  * $DESCRIPTION$
  */
-export default class $NAME$ implements EventInstructorInterface
-{
+export default class $NAME$ implements EventInstructorInterface {
 
     /**
      *
      * @returns {Subscription}
      */
-    getSubscribers(): Array<Subscription>
-    {
+    getSubscribers(): Array<Subscription> {
         return this.subscriptions
     }
 
     subscriptions: Array<Subscription> = [
         {
-            selector: 'body',
+            selector: 'document',
             subscribers: {
-                click: {
-                    callBack: function ( event ) {
-                        this.scope.documentLoadSubscriberCallBack( event )
+                load: {
+                    callBack: function (event) {
+                        this.scope.documentLoadSubscriberCallBack(event)
                     }
                 }
             }
         },
         {
-            [ $NAME$.$NAME$Event.name ]: {
-                callBack: function ( event ): void {
-                    var data = ValueResolver.valueResolver( event.detail )
+            [$NAME$.$NAME$Event.name]: {
+                callBack: function (event : Event) {
+                    var data = this.dataResolver.call(this, event.detail);
 
-                    console.log( 'new value of date: ', data )
+                    console.log("new value of date: ", data.time.getMilliseconds());
                 },
-                callBackOnes: function ( event ): void {
-                    console.log( 'this is fired only ones' )
+                callBackOnes: function (event : Event) {
+                    console.log("this is fired only ones");
                 },
-                resolver: function ( latest: any, allResolvers: Array<any> ): any {
+                resolver: function (latest : any, allResolvers: Array<any>) {
                     // the resolver can change the value of the data in the callBack function even if the resolver function in a different eventInstructor
                     // it only need to have the same selector as the subscriber where CallBackValueResolver.valueResolver is called
+                    // so if you want to modify the value from a different Class just in the 
+                    // subscriptions listen to the $NAME$.$NAME$Event.name and add a resolver function
 
-                    console.log( 'old resolver date: ', latest )
+                    console.log("all resolver data can be found here: ", allResolvers);
+                    console.log("old resolver date: ", latest.time.getMilliseconds());
+                    console.log("value resolver will create a new date");
 
                     // change the resolver value
-                    return new Date()
+                    return { time: new Date() };
                 }
             }
-        },
-        {
-
         }
     ]
-
 
     /**
      *
      * @param event
      */
-    public documentLoadSubscriberCallBack( event: Event ): Date
-    {
-        const date = new Date()
+    public documentLoadSubscriberCallBack(event: Event): void {
 
-        console.log( 'eventListener of type: ' + event.type,
-            'of the element: ' + event.target,
-            'is called from ' + $NAME$.constructor.name,
-            'on: ' + date
-        )
+        const date = new Date();
 
+        console.log(
+            "eventListener of type: " + event.type,
+            ", of the element: " + event.target,
+            "is called from " + Foo.constructor.name,
+            ", on date millisecond: " + date.getMilliseconds()
+        );
         // publish an event
-        $NAME$.$NAME$Event.fire( { time: date } )
+        $NAME$.$NAME$Event.fire({ time: date })
     }
 
     /**
@@ -83,10 +78,10 @@ export default class $NAME$ implements EventInstructorInterface
      */
     static $NAME$Event: EventFire = {
         name: '$NAME$Event',
-        fire: ( detail: any ) => {
+        fire: (detail: any) => {
             const self = $NAME$.$NAME$Event
             const eventManager: EventManager = new EventManager()
-            eventManager.fire( self.name, detail )
+            eventManager.fire(self.name, detail)
         }
     }
 }

@@ -49,7 +49,7 @@ export default class EventManager {
      *
      * @param eventsInstructor
      */
-    subscribe(eventsInstructor: Constructable<EventInstructorInterface>): void;
+    subscribe(eventsInstructor: Constructable<EventInstructorInterface>): Array<Unsubscribable>;
     /**
      *
      * @param currentSubscriber
@@ -107,7 +107,9 @@ export declare type EventFire = {
 };
 interface EventFunctions {
     callBack?: (event: Event | CustomEvent) => void;
+    subscriberId?: string;
     callBackOnes?: (event: Event | CustomEvent) => void;
+    onesSubscriberId?: string;
     resolver?: Resolver;
     resolverId?: string;
     unresolverId?: string;
@@ -118,14 +120,14 @@ interface EventFunctions {
 interface SubscriptionObject {
     selector?: EventElementSelector;
     subscribers?: {
-        [k in EventType]: EventFunctions;
+        [k in EventType]?: EventFunctions;
     };
 }
 declare type SubscriptionEvents = {
     [j in EventType]: EventFunctions;
 };
-declare type Subscription = SubscriptionObject | SubscriptionEvents;
-export declare type EventType = keyof GlobalEventHandlersEventMap | string;
+export declare type Subscription = SubscriptionObject | SubscriptionEvents;
+export declare type EventType = keyof GlobalEventHandlersEventMap & string;
 declare type EditableSelector = {
     type: string;
     value: string;

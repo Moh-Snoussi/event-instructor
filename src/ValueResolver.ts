@@ -22,9 +22,14 @@ export default class ValueResolver
      * @param selectorId
      * @param events
      */
-    public static getResolverId( selectorId: string, events: string ): string
+    public static getResolverId( selectorId: string, events: string, increment : boolean = true ): string
     {
-        return selectorId + '_' + events + ValueResolver.counter++
+        let addition : string | number = ""
+        if (increment) {
+
+            addition = ValueResolver.counter++
+        }
+        return selectorId + '_' + events + addition
     }
 
     /**
@@ -32,7 +37,7 @@ export default class ValueResolver
      * @param resolver
      * @param resolverId
      */
-    public setResolver( resolver: Resolver | undefined, resolverId: string | undefined ): string
+    public static setResolver( resolver: Resolver, resolverId: string ): string
     {
 
         if ( !ValueResolver.resolvers.hasOwnProperty( resolverId ) ) {
@@ -74,7 +79,7 @@ export default class ValueResolver
      *
      * @param resolverIdentity
      */
-    public unsetResolver( resolverIdentity: string ): boolean
+    public static unsetResolver( resolverIdentity: string ): boolean
     {
         let success : boolean = false
 
@@ -94,8 +99,8 @@ export default class ValueResolver
                 }
 
             }
-            return success
         }
+        return success
     }
 
 
@@ -107,9 +112,12 @@ export default class ValueResolver
     {
         let paramsArray: Array<any> = []
         paramsArray.push( returns )
+        //@ts-ignore
         for ( let order in ValueResolver.resolvers[ this.resolverId ] ) {
+            //@ts-ignore
             if ( ValueResolver.resolvers[ this.resolverId ].hasOwnProperty( order ) ) {
                 // the resolver function will have all returned value of all resolvers that has less priority
+                //@ts-ignore
                 ValueResolver.resolvers[ this.resolverId ][ order ].forEach( function ( resolverFunction : Resolver) {
                     if ('callBack' in resolverFunction) {
                         returns = resolverFunction.callBack( returns, paramsArray )
@@ -125,13 +133,13 @@ export default class ValueResolver
      * used to set the order of the next resolver
      * @param order
      */
-    public setOrder( order: number ): void
+    public static setOrder( order: number ): void
     {
         ValueResolver.order = order
     }
 }
 
 export type resolverStore = { [ order: number ]: ( oldResolver: any ) => any }
-interface ResolverFunction { ( latestResolver: any, allResolvers: Array<any> ): any }
-interface ResolverObject { order: number, callBack: ( latestResolver: any, allResolvers: Array<any> ) => any }
-type Resolver = ResolverFunction | ResolverObject
+interface ResolverFunction {( latestResolver: any, allResolvers: Array<any> ): any }
+interface ResolverObject { id?: number, order: number, callBack: ( latestResolver: any, allResolvers: Array<any> ) => any }
+export type Resolver = ResolverFunction & ResolverObject
