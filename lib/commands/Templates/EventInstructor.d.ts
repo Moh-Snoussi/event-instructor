@@ -1,4 +1,4 @@
-import { EventFire, EventInstructorInterface, Subscription } from "./../../EventManager";
+import { EventFire, EventInstructorInterface, Subscription } from "event-instructor";
 /**
  * $NAME$
  * $DESCRIPTION$
@@ -6,7 +6,7 @@ import { EventFire, EventInstructorInterface, Subscription } from "./../../Event
 export default class $NAME$ implements EventInstructorInterface {
     /**
      *
-     * @returns {Subscription}
+     * @returns {Array<Subscription>}
      */
     getSubscribers(): Array<Subscription>;
     subscriptions: Array<Subscription>;

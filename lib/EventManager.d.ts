@@ -17,6 +17,7 @@ export default class EventManager {
     };
     private publishers;
     private static counter;
+    static eventRegistered: boolean;
     /**
      *
      * @returns {void}

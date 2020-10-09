@@ -109,7 +109,6 @@ class CreateInstructor {
         );
 
         this.readCachedData().then(cached => {
-
             const questions = this.questions
             if (cached.cached) {
                 questions.push(...this.defaultQuestions)
@@ -222,11 +221,8 @@ class CreateInstructor {
             console.log(`${chalk.red('const')} {${chalk.blue.bold('EventManager')}} = ${chalk.blue('require')}( "event-instructor" )`);
             console.log(`${chalk.red('import')} {${chalk.blue.bold(nameFirstCapitalize)}} from "./DirectoryWhere/${nameFirstCapitalize}" ${chalk.gray('// change the directoryWhere')}`);
 
-            console.log(`${chalk.red('const')} ${chalk.blue('eventManager')} = new ${chalk.blue.bold('EventManager')}();`)
-            console.log(`${chalk.blue('eventManager')}`)
-            console.log(`\t.subscribe( ${chalk.blue.bold(nameFirstCapitalize)} )`)
-            console.log(`\t//.subscribe( ${chalk.blue.bold('anotherInstructor')} )${chalk.gray(' // you can subscribe to another Instructor')}`)
-            console.log(`\t.listen() ${chalk.gray('// register all subscribers and start listening to the events')}`);
+            console.log(`${chalk.red('const')} ${chalk.blue('eventManager')} = new ${chalk.blue.bold('EventManager')}()`)
+            console.log(`\n${chalk.blue('eventManager')}.setSubscribers([ ${chalk.blue.bold(nameFirstCapitalize)}, ${chalk.blue.bold('anotherInstructor')} ]) ${chalk.gray(' // you can subscribe to another Instructor')}`)
         });
     }
 
@@ -247,9 +243,11 @@ class CreateInstructor {
                     if (err) reject(err)
                     data = JSON.parse(data)
                     data.cached = true
+                    resolve(data)
                 });
+            } else {
+                resolve({cached: false})
             }
-            resolve(data)
         })
     }
 }

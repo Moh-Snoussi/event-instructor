@@ -9,6 +9,7 @@
 </div>
 
 (WORK IN PROGRESS)
+## quick start
 It helps organize code using the sub/pub pattern:
 
 Sub : subscribe is like addEventListner
