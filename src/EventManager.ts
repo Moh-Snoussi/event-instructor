@@ -26,6 +26,7 @@ export default class EventManager
 
     private publishers: any = {};
     private static counter: number = 0
+    public static eventRegistered: boolean = false;
 
     /**
      *
@@ -129,6 +130,11 @@ export default class EventManager
             returns.push(self.setListener( subscriber, eventsInstructorIns ));
         } );
 
+           if (!EventManager.eventRegistered) {
+            EventManager.eventsRegisteredEvent.fire({date: new Date()})
+            EventManager.eventRegistered = true;
+        }
+
         return returns
 
     }
@@ -138,7 +144,7 @@ export default class EventManager
      * @param currentSubscriber
      * @param eventInstructor
      */
-    private setListener( currentSubscriber: Subscription, eventInstructor: EventInstructorInterface ): Array<Unsubscribable>
+    private setListener( currentSubscriber: Subscription, eventInstructor: EventInstructorInterface ): Unsubscribable
     {
         let element: HTMLElement | Document | null
         let selectorId: string
@@ -167,6 +173,9 @@ export default class EventManager
 
         for ( const events in currentSubscriber.subscribers ) {
 
+            if (events === 'selector') {
+                continue
+            }
             returns[ instructorName ] [ selectorId ] = { [ events ]: [] }
 
             if ( currentSubscriber.subscribers.hasOwnProperty( events ) ) {
@@ -260,6 +269,7 @@ export default class EventManager
                 }
             }
         }
+
         return returns
     }
 
@@ -329,7 +339,10 @@ export default class EventManager
             self.subscribe( eventInstructor );
         } )
 
-        EventManager.eventsRegisteredEvent.fire();
+           if (!EventManager.eventRegistered) {
+            EventManager.eventsRegisteredEvent.fire({date: new Date()})
+            EventManager.eventRegistered = true;
+        }
     }
 
     /**
@@ -349,13 +362,7 @@ export default class EventManager
      * @param eventName
      * @param detail
      */
-    fire( eventName
-              :
-              string, detail
-              :
-              Object
-    ):
-        void
+    fire( eventName : string, detail : Object ): void
     {
         this.publish( {
             name: eventName,
@@ -366,8 +373,7 @@ export default class EventManager
     /**
      *
      */
-    static
-    eventsRegisteredEvent: EventFire = {
+    public static eventsRegisteredEvent: EventFire = {
         name: 'eventsRegistered',
         fire: function ( detail: any ) {
             const currentEvent: EventFire = EventManager.eventsRegisteredEvent
