@@ -1,6 +1,5 @@
 import EventManager, { EventType } from "./EventManager"
 import ValueResolver, { Resolver } from "./ValueResolver"
-import { InlineResolver } from "../lib/CallBackValueResolver"
 
 export default class InlineEventManager
 {
@@ -31,13 +30,14 @@ export default class InlineEventManager
     {
         const self: InlineEventManager = this
 
-        // @typescript -ingore
+                // @ts-ignore
         String.prototype.subscribe = function (
             eventOrCallBack: EventType | ( ( event: Event | CustomEvent ) => void ) | boolean,
-            callBackOrResolver: ( ( event: Event | CustomEvent, resolvers: InlineResolver ) => void ) | boolean,
+            callBackOrResolver: ( ( event: Event | CustomEvent, resolvers: Resolver ) => void ) | boolean,
             resolverOrOption: ( ( resolvers: Resolver ) => void ) | EventListenerOptions | boolean,
             eventOptionsOrOnes: EventListenerOptions | boolean,
             ones: boolean ): string | null {
+                        // @ts-ignore
             return self.handleInlineSubscriber( this, eventOrCallBack, callBackOrResolver, resolverOrOption, eventOptionsOrOnes, ones )
         }
     }
@@ -49,8 +49,9 @@ export default class InlineEventManager
     private setStringEventValueResolver(): void
     {
         const self: InlineEventManager = this
-
+        // @ts-ignore
         String.prototype.valueResolver = function ( resolver: Resolver ): string | null {
+                    // @ts-ignore
             return self.handleInlineSubscriber.call( this, resolver )
         }
     }
@@ -58,7 +59,7 @@ export default class InlineEventManager
     private handleInlineSubscriber(
         selectorOrEvent: string,
         eventOrCallBack: EventType | ( ( event: Event | CustomEvent ) => void ) | boolean,
-        callBackOrResolver?: ( ( event: Event | CustomEvent, resolvers: InlineResolver ) => void ) | boolean,
+        callBackOrResolver?: ( ( event: Event | CustomEvent, resolvers: Resolver ) => void ) | boolean,
         resolverOrOption?: ( ( resolvers: Resolver ) => void ) | EventListenerOptions | boolean,
         eventOptionsOrOnes?: EventListenerOptions | boolean,
         ones?: boolean ): string | null
@@ -77,16 +78,19 @@ export default class InlineEventManager
 
         const args: IArguments = arguments
 
+                // @ts-ignore
         for ( let arg of args ) {
             if ( typeof arg !== 'undefined' ) {
                 if ( typeof arg === 'string' && arg === args[ 1 ]) {
                     selector = selectorOrEvent
+                            // @ts-ignore
                     element = document.querySelector( selector )
                     eventName = arg
 
                 } else if ( arg === args[ 1 ] && typeof arg === 'function' && arg.name === 'resolver' ) {
                     ValueResolver.setResolver( arg, <string> <unknown> this )
                     return <string> <unknown> this;
+                            // @ts-ignore
                 } else if ( !element ) {
                     selector = 'document'
                     element = document
@@ -103,27 +107,34 @@ export default class InlineEventManager
                     }
                 } else if ( typeof arg === 'boolean' ) {
                     onlyOnes = arg
+                            // @ts-ignore
                 } else if ( typeof options === 'object' ) {
                     options = arg
                 }
             }
         }
 
+                // @ts-ignore
         let selectorId: string = EventManager.getSelectorId( {
+                    // @ts-ignore
             type: <string> selector,
+                    // @ts-ignore
             value: <string> eventName
         } )
 
         let callBackName: string
 
+                // @ts-ignore
         const resolverId : string = ValueResolver.getResolverId(selector, eventName)
 
         if ( callBackIsSet ) {
             callBackName = 'inline_' + selectorId
 
+                    // @ts-ignore
             window[ callBackName ] = function ( event ) {
                 // @ts-ignore
                 if ( onlyOnes ) {
+                            // @ts-ignore
                     event.target.removeEventListener( event.type, window[ callBackName ] )
                 }
                 // @ts-ignore
@@ -135,8 +146,11 @@ export default class InlineEventManager
 
             EventManager.unsubscribeList[ callBackName ] = {
                 callBackName: callBackName,
+                        // @ts-ignore
                 event: <string> eventName,
+                        // @ts-ignore
                 element: element,
+                        // @ts-ignore
                 options: options,
             }
         }
@@ -147,6 +161,7 @@ export default class InlineEventManager
 
         }
 
+                // @ts-ignore
         return callBackName || selectorId
     }
 
@@ -158,6 +173,7 @@ export default class InlineEventManager
     {
         const eventManager: EventManager = new EventManager()
 
+                // @ts-ignore
         String.prototype.unsubscribe = function (): boolean {
             return eventManager.unsubscribe( <string> this )
         }
@@ -170,7 +186,7 @@ export default class InlineEventManager
     private setStringUnresolve()
     {
         const eventManager: EventManager = new EventManager()
-
+        // @ts-ignore
         String.prototype.unresolve = function (): boolean {
             return eventManager.unresolve( <string> this )
         }
@@ -180,12 +196,14 @@ export default class InlineEventManager
     {
         const self: InlineEventManager = this
 
+        // @ts-ignore
         String.prototype.subscribeOnes = function (
             eventOrCallBack: EventType | ( ( event: Event | CustomEvent ) => void ) | boolean,
-            callBackOrResolver: ( ( event: Event | CustomEvent, resolvers: InlineResolver ) => void ) | boolean,
+            callBackOrResolver: ( ( event: Event | CustomEvent, resolvers: Resolver ) => void ) | boolean,
             resolverOrOption: ( ( resolvers: Resolver ) => void ) | EventListenerOptions | boolean,
             eventOptionsOrOnes: EventListenerOptions | boolean ): string | null {
 
+                // @ts-ignore
             return self.handleInlineSubscriber.call( this, eventOrCallBack, callBackOrResolver, resolverOrOption, eventOptionsOrOnes, true )
         }
     }

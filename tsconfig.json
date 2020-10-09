@@ -1,20 +1,20 @@
 {
 	"compilerOptions": {
-		
 		"target": "ES5",
 		"module": "CommonJS",
-		"strict": false,
-		"noEmitOnError": false,
-		"noEmit": false,
+		"strict": true,
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
 		"allowJs": true,
 		"outDir": "./lib",
 		"esModuleInterop": true,
-		"isolatedModules": false
 	},
 	"include": [
 		"src/"
 	],
+	"exclude": [
+		"node_module",
+		"src/commands"
+	]
 }

@@ -150,12 +150,15 @@ export default class EventManager
         let selectorId: string
         const self: EventManager = this
         // if the selector has document then the Document object will be returned
+        // @ts-ignore
         if ( currentSubscriber.selector === 'document' || !currentSubscriber.selector ) {
             element = document
             selectorId = 'document'
 
         } else {
+                    // @ts-ignore
             element = EventManager.getElement( currentSubscriber.selector )
+                    // @ts-ignore
             selectorId = EventManager.getSelectorId( currentSubscriber.selector )
         }
 
@@ -166,11 +169,12 @@ export default class EventManager
                 [ selectorId ]: {}
             }
         }
-
+        // @ts-ignore
         if ( !currentSubscriber.subscribers ) {
+                    // @ts-ignore
             currentSubscriber.subscribers = currentSubscriber
         }
-
+        // @ts-ignore
         for ( const events in currentSubscriber.subscribers ) {
 
             if (events === 'selector') {
@@ -178,10 +182,12 @@ export default class EventManager
             }
             returns[ instructorName ] [ selectorId ] = { [ events ]: [] }
 
+                    // @ts-ignore
             if ( currentSubscriber.subscribers.hasOwnProperty( events ) ) {
                 // splitting if the key is string, this allow event like 'click touch'
                 const eventsArray = events.split( ' ' )
                 // adding ability to call this.scope inside the function
+                        // @ts-ignore
                 currentSubscriber.subscribers[ events ].scope = eventInstructor
 
                 let resolverId: string
@@ -192,19 +198,22 @@ export default class EventManager
                 } else {
                     if (selectorId === 'document') {
                         resolverId = events
+                                // @ts-ignore
                        currentSubscriber.subscribers[ events ].resolverId = event 
                     } else {
                     resolverId = ValueResolver.getResolverId( selectorId, events, false )
+                            // @ts-ignore
                     currentSubscriber.subscribers[ events ].resolverId = event
                     }
                 }
 
+                        // @ts-ignore
                 const eventOptions: any = currentSubscriber.subscribers[ events ].options
                 for ( const currentEvent in eventsArray ) {
                     EventManager.counter++
 
                     const callBackName: string = instructorName + '_' + selectorId + '_' + eventsArray[ currentEvent ] + EventManager.counter
-                    
+                            // @ts-ignore
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'callBack' ) ) {
                         // @ts-ignore
                         window[ callBackName ] = function ( event ) {
@@ -214,6 +223,7 @@ export default class EventManager
                                 dataResolver: self.dataResolver,
                                 resolverId: resolverId
                             }, event )
+                                    // @ts-ignore
                             currentSubscriber.subscribers[ events ].subscriberId = callBackName
                         }
                         // @ts-ignore
@@ -229,8 +239,10 @@ export default class EventManager
                             options: eventOptions,
                         }
                     }
+                            // @ts-ignore
                     currentSubscriber.subscribers[ events ].subscriberId = callBackName
                     
+                            // @ts-ignore
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'callBackOnes' ) ) {
                         
                         const onesCallBackName = callBackName + 'ones';
@@ -260,10 +272,14 @@ export default class EventManager
                             element: element,
                             options: eventOptions,
                         }
+                                // @ts-ignore
                         currentSubscriber.subscribers[ events ].onesSubscriberId = onesCallBackName
                     }
+                            // @ts-ignore
                     if ( currentSubscriber.subscribers[ events ].hasOwnProperty( 'resolver' ) ) {
+                                // @ts-ignore
                         const resolver = currentSubscriber.subscribers[ events ].resolver
+                                // @ts-ignore
                         currentSubscriber.subscribers[ events ].unresolverId = this.setDataResolver( resolver, resolverId )
                     }
                 }
