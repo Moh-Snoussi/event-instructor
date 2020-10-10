@@ -70,6 +70,7 @@ export default class EventManager {
     /**
      *
      * subscribe to an array of eventInstructors
+     *
      * @param subscribers
      */
     setSubscribers(subscribers: Array<Constructable<EventInstructorInterface>>): void;

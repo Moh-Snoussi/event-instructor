@@ -157,7 +157,7 @@ export default class InlineEventManager
 
         if ( resolverIsSet ) {
             // @ts-ignore
-            selectorId = this.eventManager.valueResolver.setResolver( resolver, resolverId )
+            selectorId = this.eventManager.setDataResolver( resolver, resolverId )
 
         }
 

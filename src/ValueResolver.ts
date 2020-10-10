@@ -22,7 +22,7 @@ export default class ValueResolver
      * @param selectorId
      * @param events
      */
-    public static getResolverId( selectorId: string, events: string, increment : boolean = true ): string
+    public static getResolverId( selectorId: string, events: string, increment : boolean = false ): string
     {
         let addition : string | number = ""
         if (increment) {
