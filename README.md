@@ -26,13 +26,14 @@ Pub : publish is like dispatching CustomEvent
 
 Usage can be categorized into two categories : 
 - inline implementation
-- oop implementation
+- in classes implementation
 
 ### Inline
-Listening to an event:
+Listening to an event same as document.querySelector('selector').addEventListener('click')
 
 ```
-const selectorClickSubscriber = ('selector').subscribe ('click', function (event){  console.log(event) }
+const selectorClickSubscriber = ('selector').subscribe ('click', function ( event ){  console.log(event) }
+// same as document.querySelector('selector').addEventListener('click', function ( event ){console.log( event )})
 ```
 
 Unsubscribing:
@@ -46,7 +47,13 @@ Listening to the event only ones:
 ('selector').subscribeOnes('click', function (event){ console.log('this is fired only ones')})
 ```
 
+<<<<<<< HEAD
 Or if the event is bound on the document then you can include the event name and anonym function:
+=======
+If the event is bound to the document then you can include the event name and anonym function like this:
+```
+('event'). subscribe (function (event) { console.log(event) })
+>>>>>>> f7710fb5a2cdab064b0a6d8218d3f545f7fbb48b
 ```
 ('event').subscribe (function (event) { console.log(event) })
 
