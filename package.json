@@ -6,7 +6,7 @@
   "types": "./lib/EventManager.d.ts",
   "scripts": {
     "tsc": "tsc",
-    "create:instructor": "ts-node-script ./src/commands/create_instructor.ts"
+    "create:instructor": "node ./lib/commands/create_instructor.js"
   },
   "keywords": [
     "dom events",
@@ -40,7 +40,7 @@
     "replace-in-file": "^6.1.0",
     "save-dev": "0.0.1-security",
     "simple-git": "^2.20.1",
-    "touch": "^3.1.0"
+    "touch": "^3.1.0",
   },
   "devDependencies": {
     "typescript": "^4.0.3"
