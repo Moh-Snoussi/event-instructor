@@ -99,12 +99,12 @@ interface EventFunctions {
     options?: any;
     [key: string]: any;
 }
-interface SubscriptionObject {
+declare type SubscriptionObject = {
+    [key in EventType]: EventFunctions;
+} | {
     selector?: EventElementSelector;
-    subscribers?: {
-        [k in EventType]?: EventFunctions;
-    };
-}
+    subscribers?: SubscriptionEvents;
+};
 declare type SubscriptionEvents = {
     [j in EventType]: EventFunctions;
 };

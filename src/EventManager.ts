@@ -484,15 +484,12 @@ interface EventFunctions {
     [key: string]: any
 }
 
-interface SubscriptionObject {
-    selector?: EventElementSelector,
-    subscribers?:
-        {
-            [k in EventType]?: EventFunctions
-        },
-}
-
-
+type SubscriptionObject = {
+    [key in EventType]: EventFunctions;
+} | {
+    selector?: EventElementSelector;
+    subscribers?: SubscriptionEvents;
+};
 
 type SubscriptionEvents =
 {
