@@ -34,7 +34,7 @@ Inline usage is like what was showing in the quick start section
 
 ### - Subscribe/addEventListener
 ```
-const selectorClickSubscriber = ('selector').subscribe('click', function ( event ){  console.log(event) }, options)
+const selectorClickSubscriber = ('selector').subscribe('click', function( event ){  console.log(event) }, options)
 // the options are optional
 // options are same as the options of the eventListener, read more about them in:
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
@@ -48,7 +48,7 @@ const selectorClickSubscriber = ('selector').subscribe('click', function ( event
 #### - Ones Subscriber
 the subscriber will fire only ones:
 ```
-('selector').subscribeOnes('click', function (event){ console.log('this is fired only ones')})
+('selector').subscribeOnes('click', function(event){ console.log('this is fired only ones')})
 ```
 #### Listening to an event bound to the document
 If the event is bound to the document then usage is little more simpler, use the name of the event instead of the selector name:
@@ -59,7 +59,7 @@ If the event is bound to the document then usage is little more simpler, use the
 ### Resolvers
 Resolvers can be used inside a callBack function of a subscriber, it take a value and check if a different subscriber has a resolver function that will modify the returned value.
 ```
-('customEvent').subscribe(function (event){ const resolvedValue = this.dataResolver('foo')
+('customEvent').subscribe(function(event){ const resolvedValue = this.dataResolver('foo')
 console.log('new resolved value: ', resolvedValue) })
 
 ('customEvent').subscribe(function resolver(oldValue, allResolverValueArray){ console.log(allResolverValueArray); return oldValue + 'Baz' })

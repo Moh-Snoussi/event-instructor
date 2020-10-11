@@ -16,6 +16,5 @@
 	],
 	"exclude": [
 		"node_module",
-		"src/commands/Templates"
 	]
 }
