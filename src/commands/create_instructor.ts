@@ -19,6 +19,7 @@ class CreateInstructor {
         TypeScript: '.ts',
         Flow: '.flow'
     }
+    private relativeSrcCommandsDirectory = "/../../src/commands"
     private questions: Array<any> = [
         {
             name: 'name',
@@ -164,7 +165,7 @@ class CreateInstructor {
         // @ts-ignore
         const nameFirstCapitalize = data.name.charAt(0).toUpperCase() + data.name.slice(1)
         // @ts-ignore
-        const inputFile: string = path.normalize(__dirname + path.sep + 'Templates' + path.sep + 'EventInstructor' + (this.extension)[data.language])
+        const inputFile: string = path.normalize(__dirname + this.relativeSrcCommandsDirectory + path.sep + 'Templates' + path.sep + 'EventInstructor' + (this.extension)[data.language])
         // @ts-ignore
         const outputDirectory: string = path.normalize(CreateInstructor.treeRelative[data.directory] + path.sep + data.name + path.sep)
         // @ts-ignore
@@ -179,7 +180,7 @@ class CreateInstructor {
 
         if (data.style !== 'nothing') {
 
-            const inputStyleFile: string = path.normalize(__dirname + path.sep + 'Templates' + path.sep + 'style' + '.' + data.style)
+            const inputStyleFile: string = path.normalize(__dirname + this.relativeSrcCommandsDirectory + path.sep + 'Templates' + path.sep + 'style' + '.' + data.style)
             // @ts-ignore
             const outputStyleFile: string = outputDirectory + data.name.toLowerCase() + '.' + data.style
 
@@ -208,7 +209,7 @@ class CreateInstructor {
             console.log(logSymbols.success + ' ' + data.language + 'File was created to ' + chalk.underline(outputFile));
 
             // @ts-ignore
-            fs.writeFile(__dirname + path.sep + "user_default.json", JSON.stringify(data), function (err) {
+            fs.writeFile(__dirname + this.relativeSrcCommandsDirectory + path.sep + "user_default.json", JSON.stringify(data), function (err) {
                     if (err) throw err;
                     userDefault = true;
                 }
@@ -237,9 +238,9 @@ class CreateInstructor {
         };
 
         return new Promise((resolve, reject) => {
-            if (fs.existsSync(__dirname + path.sep + 'user_default.json')) {
+            if (fs.existsSync(__dirname + this.relativeSrcCommandsDirectory + path.sep + 'user_default.json')) {
                 // @ts-ignore
-                fs.readFile(__dirname + path.sep + 'user_default.json', 'utf8', function (err, data) {
+                fs.readFile(__dirname + this.relativeSrcCommandsDirectory + path.sep + 'user_default.json', 'utf8', function (err, data) {
                     if (err) reject(err)
                     data = JSON.parse(data)
                     data.cached = true

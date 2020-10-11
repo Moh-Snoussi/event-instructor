@@ -56,8 +56,17 @@ export default class EventManager {
      * - the element that the event is bound to, default document
      */
     publish(eventObject: {
+        /**
+         * the name of the event
+         */
         name: string;
+        /**
+         * the data that will be passed to the event listener, this data can be found in the event listener event.detail
+         */
         detail: Object;
+        /**
+         * the element that the event is bound to, default document
+         */
         element?: any;
     }): void;
     /**
@@ -83,36 +92,117 @@ export interface EventInstructorInterface {
 export interface Constructable<T> {
     new (...args: any): T;
 }
+/**
+ * an object that has the name of the need to be published and the publish function as fire
+ */
 export declare type EventFire = {
+    /**
+     * a string that contain the name of the event
+     */
     name: string;
+    /**
+     * a function that need to has eventManger.fire('eventName', {details}) or eventManager.publish({name: eventName, detail: detail, element: element})
+     * example:
+     * const self = Foo.FooEvent
+     * const eventManager = new EventManager()
+     * eventManager.fire( self.name, detail )
+     */
     fire: Function;
 };
 interface EventFunctions {
+    /**
+     * A call back function that will be executed every time the event that is the direct key of the object where the callback belongs is fired
+     * @param event
+     */
     callBack?: (event: Event | CustomEvent) => void;
-    subscriberId?: string;
+    /**
+     * A call back function that will be called only one time when the event that is defined in the key of the object where the callBackOnes belongs is fired
+     * The callBack will be simply removed in the first execution
+     * @param event
+     */
     callBackOnes?: (event: Event | CustomEvent) => void;
-    onesSubscriberId?: string;
+    /**
+     * if any Subscriber listen to the same event in it's callBack or callBackOnes uses const data = this.dataResolver('Foo')
+     * then the resolver function will take two argument the lastResolver (in this case is 'Foo') and allResolverArray (['Foo'])
+     * and it's returned value will be used in the event callBack or callBackOnes in this.dataResolver('Foo')
+     * this mean in our case if the resolver function return 'Bar' then: const data = this.dataResolver('Foo') // data will be FooBar
+     *
+     * the resolver can be an anonym function or can be an object that has a callBack key with a function that take two argument the lastResolver and allResolverArray
+     * and order key that has a number the higher is the number the later the resolver will execute in case of many resolver
+     */
     resolver?: Resolver;
-    resolverId?: string;
-    unresolverId?: string;
-    scope?: EventInstructorInterface | any;
-    options?: any;
-    [key: string]: any;
+    /**
+     * the options of the event, the same options like in the document.addEventListener('Foo', callBack, options)
+     * you can read more about addEventListener and it's options in https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+     */
+    options?: EventListenerOptions;
 }
+/**
+ * a Subscription can have a selector and the event that need to be listened to
+ *
+ * - selector: can be a string like "#itemId" then the querySelector will be used as it is the default selector type,
+ * the selector can also be string "document" or "window",
+ * if the selector is an object then it must have a the selector type as key and the selector as it's value
+ * selector: {getElementById: "itemId"}
+ * If the selector is not found then the document object will be considered
+ *
+ * - the event that will be listened to is a key of an object that contains the callBack or other options
+ */
 declare type SubscriptionObject = {
     [key in EventType]: EventFunctions;
 } | {
+    /**
+     * Can be a string like "#itemId" then the querySelector will be used as it is the default selector type,
+     * Can also be string "document" or "window"
+     * if the selector is an object then it must have a the selector type as key and the selector as it's value
+     * selector: {getElementById: "itemId"}
+     * If the selector is not found then the document object will be considered
+     */
     selector?: EventElementSelector;
+    /**
+     * if different callBacks for different event of the same selector is required then used
+     * example: {selector: "#itemId", subscribers: {click: {callBack: function...}, mouseout: {callBack: function...}}}
+     */
     subscribers?: SubscriptionEvents;
 };
+/**
+ * a Subscription can have a selector and the event that need to be listened to
+ *
+ * - selector: can be a string like "#itemId" then the querySelector will be used as it is the default selector type,
+ * if the selector is an object then it must have a the selector type as key and the selector as it's value
+ * selector: {getElementById: "itemId"}
+ * If the selector is not found then the document object will be considered
+ *
+ * - the event that will be listened to is a key of an object that contains the callBack or other options
+ */
 declare type SubscriptionEvents = {
     [j in EventType]: EventFunctions;
 };
+/**
+ * a Subscription can have a selector and the event that need to be listened to
+ *
+ * - selector: can be a string like "#itemId" then the querySelector will be used as it is the default selector type,
+ * if the selector is an object then it must have a the selector type as key and the selector as it's value
+ * selector: {getElementById: "itemId"}
+ * If the selector is not found then the document object will be considered
+ *
+ * - the event that will be listened to is a key of an object that contains the callBack or other options
+ */
 export declare type Subscription = SubscriptionObject | SubscriptionEvents;
+/**
+ * the event you want to listen to,
+ * can be a DomEvent or a custom event,
+ * if the event name is a javascript property then wrap it in braces [FooEvent.name]
+ * if you want to listen to multiple event at ones then separate them by space 'mouseover mouseout' or if the events are javascript property then [[FooEvent.name, BarEvent.name].join(' ')]
+ */
 export declare type EventType = keyof GlobalEventHandlersEventMap & string;
+/**
+ * editable selector has the selector type as the key and the selector as a value
+ * allowed selectors: querySelector is the default if this selector is required then you can simply use is value as selector: "#itemId",
+ * querySelectorAll, getElementById and getElementsByClassName: selector: {getElementById: "itemId"}
+ */
 declare type EditableSelector = {
-    type: string;
-    value: string;
+    [k in "querySelector" | "querySelectorAll" | "getElementById" | "getElementsByClassName"]: string;
 };
 declare type EventElementSelector = EditableSelector | string;
 declare type Unsubscribable = {

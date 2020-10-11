@@ -12,6 +12,7 @@ declare class CreateInstructor {
     private static tree;
     private static treeRelative;
     private extension;
+    private relativeSrcCommandsDirectory;
     private questions;
     private defaultQuestions;
     private constantQuestions;
