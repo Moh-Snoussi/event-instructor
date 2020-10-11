@@ -22,7 +22,7 @@ import EventManager from "event-instructor"
 
 const eventManger = new EventManager();
 
-const selectorClickSubscriber = ('selector').subscribe ('click', function ( event ){  console.log(event) }
+const selectorClickSubscriber = ('selector').subscribe('click', function ( event ){  console.log(event) }
 ```
  The usage can be categorized into two categories:
 
@@ -30,7 +30,7 @@ const selectorClickSubscriber = ('selector').subscribe ('click', function ( even
 - Event-instructors-class usage
 
 ## Inline
-Inline usage is like is showing in the quick start section
+Inline usage is like what was showing in the quick start section
 
 ### - Subscribe/addEventListener
 ```
@@ -53,16 +53,16 @@ the subscriber will fire only ones:
 #### Listening to an event bound to the document
 If the event is bound to the document then usage is little more simpler, use the name of the event instead of the selector name:
 ```
-('customEvent').subscribe(function (event) { console.log(event) })
+('customEvent').subscribe(function (event){ console.log(event) })
 ```
 
 ### Resolvers
 Resolvers can be used inside a callBack function of a subscriber, it take a value and check if a different subscriber has a resolver function that will modify the returned value.
 ```
-('customEvent').subscribe(function (event) { const resolvedValue = this.dataResolver('foo')
+('customEvent').subscribe(function (event){ const resolvedValue = this.dataResolver('foo')
 console.log('new resolved value: ', resolvedValue) })
 
-('customEvent').subscribe(function resolver(oldValue, allResolverValueArray) { console.log(allResolverValueArray); return oldValue + 'Baz' })
+('customEvent').subscribe(function resolver(oldValue, allResolverValueArray){ console.log(allResolverValueArray); return oldValue + 'Baz' })
 
 eventManger.fire('customEvent', {})
 ```
@@ -77,7 +77,7 @@ new resolved value:  fooBaz
 you can set the order the resolver is executed, the highest order will has the return of all other resolvers
 
 ```
- ('customEvent').subscribe(function resolver(oldValue, allResolverValueArray) { 
+ ('customEvent').subscribe(function resolver(oldValue, allResolverValueArray){ 
    eventManger.valueResolver.setOrder(-10)
    return oldValue + 'Bar' 
  })
