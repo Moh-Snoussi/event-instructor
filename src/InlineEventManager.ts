@@ -65,8 +65,8 @@ export default class InlineEventManager
         ones?: boolean ): string | null
     {
         const self : InlineEventManager = this
-        let selector: String
-        let eventName: String
+        let selector: string
+        let eventName: string = ""
         let element: Document | HTMLElement | null
         let callBack: Function
         let resolver: Resolver
@@ -88,8 +88,9 @@ export default class InlineEventManager
                     eventName = arg
 
                 } else if ( arg === args[ 1 ] && typeof arg === 'function' && arg.name === 'resolver' ) {
-                    ValueResolver.setResolver( arg, <string> <unknown> this )
-                    return <string> <unknown> this;
+                    const resolverId : string = ValueResolver.getResolverId('document', eventName)
+                    ValueResolver.setResolver( arg, resolverId)
+                    return resolverId;
                             // @ts-ignore
                 } else if ( !element ) {
                     selector = 'document'

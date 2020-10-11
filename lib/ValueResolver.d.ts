@@ -10,7 +10,7 @@ export default class ValueResolver {
      * this property is set dynamically in the event Manager
      */
     static resolverId: string;
-    static order: number;
+    static order: number | null;
     private static counter;
     /**
      * return an unique resolver
@@ -39,6 +39,11 @@ export default class ValueResolver {
      * @param order
      */
     static setOrder(order: number): void;
+    /**
+ * used to set the order of the next resolver
+ * @param order
+ */
+    setOrder(order: number): void;
 }
 export declare type resolverStore = {
     [order: number]: (oldResolver: any) => any;

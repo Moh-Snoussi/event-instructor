@@ -1,4 +1,4 @@
-import ValueResolver, { Resolver } from "./ValueResolver";
+import { Resolver } from "./ValueResolver";
 export default class EventManager {
     /**
      * used to allow single instance
@@ -6,77 +6,54 @@ export default class EventManager {
      */
     private static Singleton;
     /**
-     *
-     */
-    valueResolver: ValueResolver | undefined;
-    /**
      * hold events with their function name and options that can be used to unsubscribe from a particular event
      */
     static unsubscribeList: {
         [key: string]: UnsubscribableStore;
     };
-    private publishers;
-    private static counter;
-    static eventRegistered: boolean;
     /**
      *
      * @returns {void}
      */
-    constructor();
+    constructor(allowInline?: boolean);
     /**
-     *
-     * @returns {EventManager}
-     */
-    singleton(): EventManager;
-    initialize(): void;
-    dataResolver(value: any): void;
-    setDataResolver(resolver: Resolver, resolverId: string): string;
-    unresolve(resolverIdentity: string): boolean;
-    setResolverPriority(priority: number): void;
-    /**
-     * return an id that contain the element and the event
-     *
-     * @param selector
-     */
-    static getSelectorId(selector: EventElementSelector): string;
-    /**
-     * returns HTMLElement from selector,
-     * @param selector
-     * @private
-     */
-    private static getElement;
-    /**
-     * will cleanup the subscriber and start listening
+     * subscribes to an event-instructor class
+     * use the following command on terminal to generate an event-instructor class
+     * npm explore npm run create:constructor
      *
      * @param eventsInstructor
      */
     subscribe(eventsInstructor: Constructable<EventInstructorInterface>): Array<Unsubscribable>;
     /**
      *
-     * @param currentSubscriber
-     * @param eventInstructor
-     */
-    private setListener;
-    /**
+     * unsubscribe an event
+     * require the subscriber id, that can be found in EventManager.unsubscribeList
      *
      * @param unsubscribable
      */
     unsubscribe(unsubscribable: Unsubscribable | string): boolean;
     /**
-     * remove an event listener
-     * @param unsubscribableId
-     */
-    private static removeListener;
-    /**
      *
-     * subscribe to an array of eventInstructors
+     * subscribe to an array of eventInstructors classes,
+     * the eventInstructor class does not need to be initialized
+     *
+     * an eventInstructor can be created using the command line:
+     * npm explore event-instructor npm run create:instructor
+     *
+     * ex: import Foo form "./Foo"; eventManager.setSubscribers([Foo])
      *
      * @param subscribers
      */
     setSubscribers(subscribers: Array<Constructable<EventInstructorInterface>>): void;
     /**
+     * publish an event, same as dispatching a custom event
      *
      * @param eventObject
+     *
+     * the event Object has
+     * - name of the event
+     * - detail that are passed with the event
+     * - the element that the event is bound to, default document
      */
     publish(eventObject: {
         name: string;
@@ -84,12 +61,15 @@ export default class EventManager {
         element?: any;
     }): void;
     /**
+     * used to publish an event, same as dispatching a custom event
      *
-     * @param eventName
-     * @param detail
+     * @param eventName event name
+     * @param detail detail need to be passed
      */
     fire(eventName: string, detail: Object): void;
     /**
+     * the current event is fired before the "window load"
+     * it will be published if a given events are registered
      *
      */
     static eventsRegisteredEvent: EventFire;

@@ -15,7 +15,7 @@ export default class EventManager
     private static Singleton: EventManager;
 
     /**
-     *
+     * @internal
      */
     valueResolver: ValueResolver | undefined
 
@@ -24,56 +24,84 @@ export default class EventManager
      */
     static unsubscribeList: { [ key: string ]: UnsubscribableStore } = {}
 
+    /**
+     * @internal
+     */
     private publishers: any = {};
+
+    /**
+     * @internal
+     */
     private static counter: number = 0
+
+    /**
+     * @internal
+     */
     public static eventRegistered: boolean = false;
 
     /**
      *
      * @returns {void}
      */
-    constructor()
+    constructor( allowInline : boolean = true )
     {
-        return this.singleton()
+        return this.singleton( allowInline )
     }
 
     /**
+     * @internal
      *
      * @returns {EventManager}
      */
-    singleton(): EventManager
+    singleton( allowInline : boolean ): EventManager
     {
         if ( !EventManager.Singleton ) {
             EventManager.Singleton = this;
-            this.initialize()
+            if (allowInline) {
+                new InlineEventManager( this )
+            }
+            this.valueResolver = new ValueResolver
 
         }
         return EventManager.Singleton
     }
 
-    public initialize(): void
-    {
-        this.valueResolver = new ValueResolver
-        new InlineEventManager( this )
-    }
 
+    /**
+     * @internal
+     * @param value 
+     */
     public dataResolver( value: any ): void
     {
         // @ts-ignore
         return EventManager.Singleton.valueResolver?.dataResolver.call( this, value )
     }
 
+    /**
+     * 
+     * @internal
+     * @param resolver 
+     * @param resolverId 
+     */
     public setDataResolver( resolver: Resolver, resolverId: string ): string
     {
 
         return <string> ValueResolver.setResolver( resolver, resolverId )
     }
 
+    /**
+     * @internal
+     * @param resolverIdentity 
+     */
     public unresolve( resolverIdentity: string ): boolean
     {
        return <boolean> ValueResolver.unsetResolver( resolverIdentity )
     }
 
+    /**
+     * @internal
+     * @param priority 
+     */
     public setResolverPriority( priority: number ): void
     {
         return ValueResolver.setOrder( priority )
@@ -81,6 +109,8 @@ export default class EventManager
 
     /**
      * return an id that contain the element and the event
+     * 
+     * @internal
      *
      * @param selector
      */
@@ -91,6 +121,7 @@ export default class EventManager
 
     /**
      * returns HTMLElement from selector,
+     * @internal
      * @param selector
      * @private
      */
@@ -109,7 +140,9 @@ export default class EventManager
 
 
     /**
-     * will cleanup the subscriber and start listening
+     * subscribes to an event-instructor class
+     * use the following command on terminal to generate an event-instructor class
+     * npm explore npm run create:constructor
      *
      * @param eventsInstructor
      */
@@ -136,11 +169,11 @@ export default class EventManager
         }
 
         return returns
-
     }
 
     /**
      *
+     * @internal
      * @param currentSubscriber
      * @param eventInstructor
      */
@@ -291,6 +324,9 @@ export default class EventManager
 
     /**
      *
+     * unsubscribe an event
+     * require the subscriber id, that can be found in EventManager.unsubscribeList
+     * 
      * @param unsubscribable
      */
     unsubscribe( unsubscribable: Unsubscribable | string ): boolean
@@ -322,6 +358,7 @@ export default class EventManager
 
     /**
      * remove an event listener
+     * @internal
      * @param unsubscribableId
      */
     private static removeListener( unsubscribableId: string ): boolean
@@ -343,7 +380,13 @@ export default class EventManager
 
     /**
      *
-     * subscribe to an array of eventInstructors
+     * subscribe to an array of eventInstructors classes,
+     * the eventInstructor class does not need to be initialized
+     * 
+     * an eventInstructor can be created using the command line:
+     * npm explore event-instructor npm run create:instructor
+     * 
+     * ex: import Foo form "./Foo"; eventManager.setSubscribers([Foo])
      * 
      * @param subscribers
      */
@@ -363,8 +406,14 @@ export default class EventManager
     }
 
     /**
+     * publish an event, same as dispatching a custom event
      *
      * @param eventObject
+     * 
+     * the event Object has
+     * - name of the event
+     * - detail that are passed with the event
+     * - the element that the event is bound to, default document
      */
     publish( eventObject: { name: string, detail: Object, element?: any } ): void
     {
@@ -375,9 +424,10 @@ export default class EventManager
     }
 
     /**
+     * used to publish an event, same as dispatching a custom event
      *
-     * @param eventName
-     * @param detail
+     * @param eventName event name
+     * @param detail detail need to be passed
      */
     fire( eventName : string, detail : Object ): void
     {
@@ -388,6 +438,8 @@ export default class EventManager
     }
 
     /**
+     * the current event is fired before the "window load"
+     * it will be published if a given events are registered
      *
      */
     public static eventsRegisteredEvent: EventFire = {

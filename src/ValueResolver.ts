@@ -13,7 +13,7 @@ export default class ValueResolver
      * this property is set dynamically in the event Manager
      */
     static resolverId: string
-    static order: number = -1
+    static order: number | null = null
 
     private static counter = -1
 
@@ -45,13 +45,19 @@ export default class ValueResolver
         }
         let index: number = -1
         // @ts-ignore
-        if ( resolver.order || this.order >= 0 ) {
+        if ( resolver.order) {
             // order is defined in the resolver
-            // @ts-ignoreresolver
-            index = this.order >= 0 ? this.order : resolver.order
+            // @ts-ignore resolver
+            index = resolver.order
             ValueResolver.order = -1
         } else if ( typeof resolver === 'function' ) {
             resolver.callBack = resolver
+        }
+
+        if ( ValueResolver.order !== null )
+        {
+            index = ValueResolver.order
+            ValueResolver.order = null
         }
         // @ts-ignore
         ValueResolver.counter++
@@ -66,7 +72,7 @@ export default class ValueResolver
         // now we sort the resolver that priority is considered
         const ordered: resolverStore = {}
 
-        Object.keys( ValueResolver.resolvers[ resolverId ] ).sort().forEach( function ( key: string ) {
+        Object.keys( ValueResolver.resolvers[ resolverId ] ).sort().reverse().forEach( function ( key: string ) {
             ordered[ <number> <unknown> key ] = ValueResolver.resolvers[ resolverId ][ key ];
         } );
         // reassigning sorted values
@@ -118,7 +124,7 @@ export default class ValueResolver
             if ( ValueResolver.resolvers[ this.resolverId ].hasOwnProperty( order ) ) {
                 // the resolver function will have all returned value of all resolvers that has less priority
                 //@ts-ignore
-                ValueResolver.resolvers[ this.resolverId ][ order ].forEach( function ( resolverFunction : Resolver) {
+                ValueResolver.resolvers[ this.resolverId ][ order ].forEach( function ( resolverFunction : Resolver ) {
                     if ('callBack' in resolverFunction) {
                         returns = resolverFunction.callBack( returns, paramsArray )
                     }
@@ -134,6 +140,15 @@ export default class ValueResolver
      * @param order
      */
     public static setOrder( order: number ): void
+    {
+        ValueResolver.order = order
+    }
+
+        /**
+     * used to set the order of the next resolver
+     * @param order
+     */
+    public setOrder( order: number ): void
     {
         ValueResolver.order = order
     }

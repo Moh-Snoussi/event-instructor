@@ -218,7 +218,7 @@ class CreateInstructor {
                 console.log(logSymbols.success + ' User defaults created, next time you can skip directory, language and style questions');
             }
             console.log(logSymbols.info + ' ' + chalk.underline('Start editing your new instructor then import it from the entry point of your javascript:') + '\n');
-            console.log(`${chalk.red('const')} {${chalk.blue.bold('EventManager')}} = ${chalk.blue('require')}( "event-instructor" )`);
+            console.log(`${chalk.red('import')} ${chalk.blue.bold('EventManager')} = ${chalk.blue('from')} "event-instructor"`);
             console.log(`${chalk.red('import')} {${chalk.blue.bold(nameFirstCapitalize)}} from "./DirectoryWhere/${nameFirstCapitalize}" ${chalk.gray('// change the directoryWhere')}`);
 
             console.log(`${chalk.red('const')} ${chalk.blue('eventManager')} = new ${chalk.blue.bold('EventManager')}()`)

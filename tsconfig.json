@@ -9,6 +9,7 @@
 		"allowJs": true,
 		"outDir": "./lib",
 		"esModuleInterop": true,
+		"stripInternal": true
 	},
 	"include": [
 		"src/"
