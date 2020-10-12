@@ -28,7 +28,7 @@ export default class $NAME$ {
       }
     },
     {
-      [EventManager.eventRegisteredEvent.name]: {
+      [EventManager.eventsRegisteredEvent.name]: {
         callBack: function ( event ) {
           this.scope.documentLoadSubscriberCallBack( event );
         },
